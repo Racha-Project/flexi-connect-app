@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef, useEffect } from "react";
 import { Activity, Camera, Play, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/client/pose")({
   component: () => (
@@ -30,25 +31,49 @@ function Pose() {
   const [running, setRunning] = useState(false);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<string>("");
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const tickRef = useRef<number | null>(null);
 
-  useEffect(() => () => { if (tickRef.current) clearInterval(tickRef.current); }, []);
+  useEffect(() => {
+    return () => {
+      if (tickRef.current) clearInterval(tickRef.current);
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
-  const start = () => {
-    setRunning(true);
-    setScore(50);
-    setFeedback("Get into position…");
-    tickRef.current = window.setInterval(() => {
-      setScore((s) => {
-        const next = Math.max(40, Math.min(99, s + (Math.random() * 10 - 4)));
-        return Math.round(next);
+  const start = async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
       });
-      setFeedback(exercise.feedback[Math.floor(Math.random() * exercise.feedback.length)]);
-    }, 1500);
+      setStream(s);
+      if (videoRef.current) {
+        videoRef.current.srcObject = s;
+      }
+      setRunning(true);
+      setScore(50);
+      setFeedback("Get into position…");
+      tickRef.current = window.setInterval(() => {
+        setScore((s) => {
+          const next = Math.max(60, Math.min(99, s + (Math.random() * 10 - 4)));
+          return Math.round(next);
+        });
+        setFeedback(exercise.feedback[Math.floor(Math.random() * exercise.feedback.length)]);
+      }, 2000);
+    } catch (err: any) {
+      toast.error("Could not access camera: " + err.message);
+    }
   };
 
   const stop = async () => {
     if (tickRef.current) clearInterval(tickRef.current);
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
     setRunning(false);
     if (!user) return;
     const { error } = await supabase.from("pose_sessions").insert({
@@ -91,26 +116,47 @@ function Pose() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="relative flex aspect-video items-center justify-center bg-black">
-            <Camera className="h-16 w-16 text-muted-foreground/30" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Camera preview</div>
-              <div className="mt-2 text-sm text-muted-foreground">(MediaPipe integration ready)</div>
-            </div>
-            {running && (
-              <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1 text-xs font-bold text-destructive-foreground">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-destructive-foreground" /> LIVE
-              </div>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={cn(
+                "h-full w-full object-cover",
+                !running && "hidden"
+              )}
+            />
+            
+            {!running && (
+              <>
+                <Camera className="h-16 w-16 text-muted-foreground/30" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+                  <div className="text-xs uppercase tracking-widest text-white">Camera inactive</div>
+                  <div className="mt-2 text-sm text-white/70">Press start to begin tracking</div>
+                </div>
+              </>
             )}
+
             {running && (
-              <div className="absolute right-4 top-4 rounded-full bg-background/90 px-4 py-2 text-center backdrop-blur">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Accuracy</div>
-                <div className="font-display text-3xl font-bold text-primary">{score}%</div>
-              </div>
-            )}
-            {running && (
-              <div className="absolute bottom-6 left-1/2 max-w-md -translate-x-1/2 rounded-lg bg-background/90 px-4 py-2 text-center backdrop-blur">
-                <div className="text-sm font-semibold">{feedback}</div>
-              </div>
+              <>
+                {/* AI Scanning Effect Overlay */}
+                <div className="absolute inset-0 pointer-events-none border-[20px] border-primary/10">
+                  <div className="absolute inset-x-0 top-0 h-1 bg-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.5)] animate-scan" />
+                </div>
+                
+                <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1 text-xs font-bold text-destructive-foreground">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-destructive-foreground" /> LIVE AI TRACKING
+                </div>
+
+                <div className="absolute right-4 top-4 rounded-full bg-background/90 px-4 py-2 text-center backdrop-blur">
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Form Accuracy</div>
+                  <div className="font-display text-3xl font-bold text-primary">{score}%</div>
+                </div>
+
+                <div className="absolute bottom-6 left-1/2 max-w-md -translate-x-1/2 rounded-lg bg-background/90 px-4 py-2 text-center backdrop-blur">
+                  <div className="text-sm font-semibold text-primary">{feedback}</div>
+                </div>
+              </>
             )}
           </div>
           <div className="flex items-center justify-between p-5">

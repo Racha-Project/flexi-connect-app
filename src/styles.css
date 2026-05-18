@@ -103,8 +103,16 @@
   --sidebar-primary-foreground: oklch(0.18 0 0);
   --sidebar-accent: oklch(0.22 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.25 0 0);
+  --sidebar-border: oklch(0.24 0 0);
   --sidebar-ring: oklch(0.92 0.22 119);
+
+  --animate-scan: scan 3s linear infinite;
+
+  @keyframes scan {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+  }
 }
 
 .dark {
