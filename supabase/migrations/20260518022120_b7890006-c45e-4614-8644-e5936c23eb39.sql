@@ -53,6 +53,7 @@ create table public.trainer_profiles (
   bio text,
   specialties text[] default '{}',
   certifications text[] default '{}',
+  specialized_goals fitness_goal[] default '{}',
   experience_years int default 0,
   price_per_session numeric default 0,
   rating numeric default 0,

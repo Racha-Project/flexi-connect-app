@@ -7,6 +7,15 @@ import { useEffect, useState } from "react";
 import { Loader2, Save, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarUpload } from "@/components/auth/AvatarUpload";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const GOALS = [
+  { v: "weight_loss", l: "Weight Loss" },
+  { v: "muscle_gain", l: "Muscle Gain" },
+  { v: "body_recomposition", l: "Body Recomposition" },
+  { v: "strength_training", l: "Strength Training" },
+  { v: "general_fitness", l: "General Fitness" },
+];
 
 export const Route = createFileRoute("/trainer/profile")({
   component: () => <RoleGuard role="trainer"><P /></RoleGuard>,
@@ -47,6 +56,7 @@ function P() {
         bio: (form.bio as string) || null,
         specialties,
         certifications,
+        specialized_goals: (form.specialized_goals as string[]) || [],
         experience_years: Number(form.experience_years || 0),
         price_per_session: Number(form.price_per_session || 0),
         training_location: (form.training_location as string) || null,
@@ -81,6 +91,28 @@ function P() {
       <form onSubmit={save} className="space-y-5 rounded-xl border border-border bg-card p-6">
         <F label="Full name"><input value={(form.full_name as string) ?? ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className={cls} /></F>
         <F label="Bio"><textarea rows={3} value={(form.bio as string) ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} className={cls} /></F>
+        
+        <F label="Specialized Goals">
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            {GOALS.map((g) => (
+              <div key={g.v} className="flex items-center space-x-2">
+                <Checkbox
+                  id={g.v}
+                  checked={((form.specialized_goals as string[]) ?? []).includes(g.v)}
+                  onCheckedChange={(checked) => {
+                    const current = (form.specialized_goals as string[]) ?? [];
+                    const next = checked ? [...current, g.v] : current.filter((v) => v !== g.v);
+                    setForm({ ...form, specialized_goals: next });
+                  }}
+                />
+                <label htmlFor={g.v} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                  {g.l}
+                </label>
+              </div>
+            ))}
+          </div>
+        </F>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <F label="Years of experience"><input type="number" value={(form.experience_years as number) ?? 0} onChange={(e) => setForm({ ...form, experience_years: e.target.value })} className={cls} /></F>
           <F label="Price per session ($)"><input type="number" value={(form.price_per_session as number) ?? 0} onChange={(e) => setForm({ ...form, price_per_session: e.target.value })} className={cls} /></F>

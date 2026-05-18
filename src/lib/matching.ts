@@ -13,6 +13,7 @@ export interface ClientPrefs {
 export interface TrainerLike {
   user_id: string;
   specialties?: string[] | null;
+  specialized_goals?: string[] | null;
   experience_years?: number | null;
   price_per_session?: number | null;
   rating?: number | null;
@@ -61,16 +62,25 @@ export function scoreTrainer(
   const reasons: string[] = [];
   let total = 0;
 
-  // 30% fitness goal / specialty
+  // 30% fitness goal / specialized goals
   const goal = client.fitness_goal ?? undefined;
-  const wanted = goal ? goalSpecialtyMap[goal] ?? [] : [];
-  const specs = (trainer.specialties ?? []).map((s) => s.toLowerCase());
-  const specHit = wanted.some((w) => specs.some((s) => s.includes(w)));
-  if (specHit) {
+  const specializedGoals = trainer.specialized_goals ?? [];
+  const goalMatch = goal && specializedGoals.includes(goal);
+
+  if (goalMatch) {
     total += 30;
-    reasons.push(`Specializes in ${goal?.replace("_", " ")}`);
-  } else if (specs.length > 0) {
-    total += 12;
+    reasons.push(`Expert in your goal: ${goal?.replace("_", " ")}`);
+  } else {
+    // Fallback to specialty string matching
+    const wanted = goal ? goalSpecialtyMap[goal] ?? [] : [];
+    const specs = (trainer.specialties ?? []).map((s) => s.toLowerCase());
+    const specHit = wanted.some((w) => specs.some((s) => s.includes(w)));
+    if (specHit) {
+      total += 25;
+      reasons.push(`Specializes in ${goal?.replace("_", " ")}`);
+    } else if (specs.length > 0 || specializedGoals.length > 0) {
+      total += 10;
+    }
   }
 
   // 20% distance
