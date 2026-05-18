@@ -122,7 +122,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         roleLoading,
         signOut: async () => {
-          await supabase.auth.signOut();
+          try {
+            await supabase.auth.signOut();
+          } catch (err) {
+            console.error("Auth Provider: Sign out error:", err);
+          } finally {
+            // Force clear state even if Supabase sign out fails
+            setSession(null);
+            setUser(null);
+            setRole(null);
+          }
         },
         refreshRole: async () => {
           if (user) await loadRole(user.id);
