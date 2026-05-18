@@ -6,7 +6,7 @@ import { Loader2, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/admin/reviews" as any)({
+export const Route = createFileRoute("/admin/reviews")({
   component: () => (
     <RoleGuard role="admin">
       <R />
