@@ -19,6 +19,7 @@ function Login() {
 
   useEffect(() => {
     if (!loading && !roleLoading && user && role) {
+      console.log("Redirecting to dashboard for role:", role);
       nav({ to: `/${role}/dashboard` as never });
     }
   }, [user, role, loading, roleLoading, nav]);
@@ -27,21 +28,34 @@ function Login() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      console.log("Attempting sign in...");
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
       if (error) {
+        console.error("Sign in error:", error.message);
         toast.error(error.message);
-        setIsSubmitting(false); // Reset only on error, on success useEffect will redirect
+        setIsSubmitting(false);
       } else {
+        console.log("Sign in successful, waiting for role...");
         toast.success("Welcome back!");
-        // We don't set isSubmitting(false) here to keep the button loading while redirecting
+        // Safety timeout: if we don't redirect in 8 seconds, reset button
+        setTimeout(() => {
+          if (mountedRef.current) setIsSubmitting(false);
+        }, 8000);
       }
     } catch (err: any) {
+      console.error("Unexpected sign in error:", err);
       toast.error(err.message || "An unexpected error occurred");
       setIsSubmitting(false);
     }
   };
 
-  const isLoading = loading || (user && roleLoading) || isSubmitting;
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const isLoading = isSubmitting || loading || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

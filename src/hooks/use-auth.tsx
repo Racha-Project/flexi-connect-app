@@ -24,55 +24,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roleLoading, setRoleLoading] = useState(false);
 
   const loadRole = async (uid: string) => {
-    if (roleLoading) return;
     setRoleLoading(true);
+    console.log("Loading role for user:", uid);
     try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", uid)
+        .order("role", { ascending: true }) // Ensure deterministic order if multiple
         .limit(1)
         .maybeSingle();
       
-      if (error) {
-        console.error("Supabase role fetch error:", error);
-        throw error;
-      }
+      if (error) throw error;
       
       const userRole = (data?.role as AppRole) || "client";
-      console.log("Loaded role for user:", uid, userRole);
+      console.log("Role loaded successfully:", userRole);
       setRole(userRole);
     } catch (err) {
-      console.error("Failed to load role, falling back to client:", err);
-      setRole("client");
+      console.error("Critical: Failed to load role:", err);
+      setRole("client"); // Fallback to client to prevent lock-out
     } finally {
       setRoleLoading(false);
     }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_evt, s) => {
+    let mounted = true;
+
+    const initAuth = async () => {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        setSession(s);
+        setUser(s?.user ?? null);
+        
+        if (s?.user) {
+          await loadRole(s.user.id);
+        }
+      } catch (err) {
+        console.error("Auth init error:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evt, s) => {
+      console.log("Auth state change:", evt, s?.user?.id);
+      if (!mounted) return;
+
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) {
-        await loadRole(s.user.id);
-      } else {
+
+      if (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED") {
+        if (s?.user) await loadRole(s.user.id);
+      } else if (evt === "SIGNED_OUT") {
         setRole(null);
       }
+      
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        loadRole(s.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
