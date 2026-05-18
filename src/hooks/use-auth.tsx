@@ -35,17 +35,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoleLoading(true);
     console.log("Auth Provider: Fetching role for:", uid);
 
+    // Hard timeout for the role fetch to prevent hanging the whole app
+    const rolePromise = supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid)
+      .order("role", { ascending: true })
+      .limit(1);
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Role fetch timeout")), 4000)
+    );
+
     try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", uid)
-        .order("role", { ascending: true }) // admin < client < trainer
-        .limit(1);
+      const result = await Promise.race([rolePromise, timeoutPromise]) as any;
       
-      if (error) throw error;
+      if (result.error) throw result.error;
       
-      const userRole = (data?.[0]?.role as AppRole) || "client";
+      const userRole = (result.data?.[0]?.role as AppRole) || "client";
       console.log("Auth Provider: Role identified as:", userRole);
       
       setRole(userRole);
@@ -64,21 +71,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Safety fallback: Force loading to false after 5 seconds no matter what
-    const timer = setTimeout(() => {
+    // Safety fallback: Force loading to false after 6 seconds no matter what
+    const safetyTimer = setTimeout(() => {
       if (mounted && loading) {
-        console.warn("Auth Provider: Safety fallback triggered (loading forced to false)");
+        console.warn("Auth Provider: GLOBAL safety fallback triggered");
         setLoading(false);
       }
-    }, 5000);
+    }, 6000);
 
     const initAuth = async () => {
       try {
         const { data: { session: s } } = await supabase.auth.getSession();
         if (!mounted) return;
+        
         setSession(s);
         setUser(s?.user ?? null);
-        if (s?.user) await loadRole(s.user.id);
+        
+        if (s?.user) {
+          // We don't strictly await loadRole here if it might hang
+          // but we want it to finish before loading is false if possible
+          await Promise.race([
+            loadRole(s.user.id),
+            new Promise(res => setTimeout(res, 3500))
+          ]);
+        }
       } catch (err) {
         console.error("Auth Provider: Init error:", err);
       } finally {
@@ -89,21 +105,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evt, s) => {
+      console.log("Auth Provider: Auth state change:", evt);
       if (!mounted) return;
+      
       setSession(s);
       setUser(s?.user ?? null);
 
       if (s?.user && (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED")) {
-        await loadRole(s.user.id);
+        // Run role load in background or with timeout
+        loadRole(s.user.id);
       } else if (evt === "SIGNED_OUT") {
         setRole(null);
+        localStorage.removeItem("fitder_role");
       }
-      setLoading(false);
+      
+      // Ensure loading is false after a short delay to allow state updates
+      setTimeout(() => {
+        if (mounted) setLoading(false);
+      }, 500);
     });
 
     return () => {
       mounted = false;
-      clearTimeout(timer);
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
