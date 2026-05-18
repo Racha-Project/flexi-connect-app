@@ -33,6 +33,13 @@ function Register() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    console.log("Register: Attempting sign up...");
+
+    const safetyTimeout = setTimeout(() => {
+      console.warn("Register: Sign up safety timeout reached");
+      setIsSubmitting(false);
+    }, 15000); // 15s for sign up as it takes longer
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -44,15 +51,19 @@ function Register() {
       });
 
       if (error) {
+        console.error("Register: Sign up error:", error.message);
         toast.error(error.message);
         setIsSubmitting(false);
+        clearTimeout(safetyTimeout);
       } else {
+        console.log("Register: Account created, waiting for DB sync...");
         toast.success("Account created — waiting for database sync…");
-        // Success is handled by the useEffect above
       }
     } catch (err: any) {
+      console.error("Register: Unexpected error:", err);
       toast.error(err.message || "Something went wrong");
       setIsSubmitting(false);
+      clearTimeout(safetyTimeout);
     }
   };
 

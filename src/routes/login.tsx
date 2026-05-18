@@ -30,16 +30,30 @@ function Login() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    console.log("Login: Attempting sign in...");
+
+    // Safety timeout to reset button if redirect never happens
+    const safetyTimeout = setTimeout(() => {
+      console.warn("Login: Sign in safety timeout reached");
+      setIsSubmitting(false);
+    }, 10000);
+
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
+        console.error("Login: Sign in error:", error.message);
         toast.error(error.message);
         setIsSubmitting(false);
+        clearTimeout(safetyTimeout);
+      } else {
+        console.log("Login: Auth successful, waiting for DB role fetch...");
+        // Keep safety timeout running for the redirect
       }
-      // Success is handled by the useEffect above once the DB role is fetched
     } catch (err: any) {
+      console.error("Login: Unexpected error:", err);
       toast.error(err.message || "An unexpected error occurred");
       setIsSubmitting(false);
+      clearTimeout(safetyTimeout);
     }
   };
 

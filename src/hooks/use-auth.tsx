@@ -29,6 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoleLoading(true);
     console.log("Auth Provider: FETCHING ROLE FROM DB ONLY for:", uid);
 
+    // Hard timeout of 5 seconds for role fetch
+    const timeout = setTimeout(() => {
+      console.warn("Auth Provider: Role fetch timeout, defaulting to client");
+      setRole("client");
+      setRoleLoading(false);
+    }, 5000);
+
     try {
       const { data, error } = await supabase
         .from("user_roles")
@@ -36,6 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("user_id", uid)
         .order("role", { ascending: true }) // admin < client < trainer
         .limit(1);
+      
+      clearTimeout(timeout);
       
       if (error) throw error;
       
@@ -48,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRole(userRole);
       }
     } catch (err) {
+      clearTimeout(timeout);
       console.error("Auth Provider: Error fetching role from DB:", err);
       setRole("client");
     } finally {
