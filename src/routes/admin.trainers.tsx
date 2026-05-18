@@ -23,7 +23,8 @@ function T() {
   });
 
   const toggle = async (id: string, field: "is_approved" | "is_suspended", v: boolean) => {
-    const { error } = await supabase.from("trainer_profiles").update({ [field]: v }).eq("id", id);
+    const patch = field === "is_approved" ? { is_approved: v } : { is_suspended: v };
+    const { error } = await supabase.from("trainer_profiles").update(patch).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["admin-trainers"] }); }
   };
