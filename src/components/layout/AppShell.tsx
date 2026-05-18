@@ -21,6 +21,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { ChatBot } from "./ChatBot";
 
 type NavItem = { to: string; label: string; icon: typeof Search };
 
@@ -143,6 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <ChatBot />
       </div>
     </div>
   );
