@@ -48,13 +48,13 @@ function Profile() {
     const { error } = await supabase
       .from("profiles")
       .update({
-        full_name: form.full_name,
-        gender: form.gender || null,
-        fitness_goal: form.fitness_goal || null,
+        full_name: (form.full_name as string) || null,
+        gender: (form.gender as "male" | "female" | "other") || null,
+        fitness_goal: (form.fitness_goal as "weight_loss") || null,
         budget_min: form.budget_min ? Number(form.budget_min) : null,
         budget_max: form.budget_max ? Number(form.budget_max) : null,
-        preferred_trainer_gender: form.preferred_trainer_gender || null,
-        preferred_experience: form.preferred_experience || "any",
+        preferred_trainer_gender: (form.preferred_trainer_gender as "male" | "female" | "other") || null,
+        preferred_experience: (form.preferred_experience as "any") || "any",
         latitude: form.latitude ? Number(form.latitude) : null,
         longitude: form.longitude ? Number(form.longitude) : null,
       })
