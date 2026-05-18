@@ -122,15 +122,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         roleLoading,
         signOut: async () => {
+          console.log("Auth Provider: Starting sign out...");
           try {
-            await supabase.auth.signOut();
+            // 1. Clear local storage first to prevent any persisted auth issues
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // 2. Attempt Supabase sign out with a very short timeout
+            // If it takes too long, we just move on to local clearance
+            const signOutPromise = supabase.auth.signOut();
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Sign out timeout")), 1500)
+            );
+
+            await Promise.race([signOutPromise, timeoutPromise]).catch(err => {
+              console.warn("Auth Provider: Supabase sign out deferred or timed out:", err);
+            });
           } catch (err) {
-            console.error("Auth Provider: Sign out error:", err);
+            console.error("Auth Provider: Error during sign out process:", err);
           } finally {
-            // Force clear state even if Supabase sign out fails
+            // 3. Guaranteed state clearance
             setSession(null);
             setUser(null);
             setRole(null);
+            console.log("Auth Provider: Sign out state cleared locally.");
           }
         },
         refreshRole: async () => {

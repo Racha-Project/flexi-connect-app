@@ -106,11 +106,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <button
             onClick={async () => {
-              try {
-                await signOut();
-              } finally {
-                nav({ to: "/login" });
-              }
+              console.log("AppShell: Sign out initiated");
+              await signOut();
+              console.log("AppShell: Redirecting to login...");
+              window.location.href = "/login";
             }}
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
           >
