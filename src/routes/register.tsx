@@ -20,6 +20,14 @@ function Register() {
   const [role, setRole] = useState<"client" | "trainer">("client");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    // ONLY redirect once the user is created AND the role is confirmed in the DB
+    if (!authLoading && !roleLoading && user && userRole) {
+      console.log("Register: Strict redirect to:", `/${userRole}/dashboard`);
+      nav({ to: `/${userRole}/dashboard` as never });
+    }
+  }, [user, userRole, authLoading, roleLoading, nav]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -39,11 +47,8 @@ function Register() {
         toast.error(error.message);
         setIsSubmitting(false);
       } else {
-        toast.success("Account created — signing you in…");
-        // Safety redirect if auth change doesn't trigger it
-        setTimeout(() => {
-          nav({ to: `/${role}/dashboard` as never });
-        }, 2000);
+        toast.success("Account created — waiting for database sync…");
+        // Success is handled by the useEffect above
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

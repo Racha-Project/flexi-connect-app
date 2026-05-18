@@ -17,65 +17,32 @@ function Login() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Debugging logs to help identify why the button might be stuck
   useEffect(() => {
-    console.log("Login Page State:", { loading, roleLoading, isSubmitting, hasUser: !!user, role });
-  }, [loading, roleLoading, isSubmitting, user, role]);
-
-  useEffect(() => {
+    // ONLY redirect if we have a user AND a role confirmed from DB
     if (!loading && !roleLoading && user && role) {
-      console.log("Redirecting to dashboard for role:", role);
+      console.log("Login: Strict redirect to:", `/${role}/dashboard`);
       nav({ to: `/${role}/dashboard` as never });
     }
   }, [user, role, loading, roleLoading, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent double submit
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      console.log("Attempting sign in with:", email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      
       if (error) {
-        console.error("Sign in error:", error.message);
         toast.error(error.message);
         setIsSubmitting(false);
-      } else {
-        console.log("Sign in successful, waiting for role and redirect...");
-        toast.success("Welcome back!");
-        // We DON'T set isSubmitting(false) here because we want to keep the loading state
-        // until the redirect happens. But we have the safety timeout below.
       }
+      // Success is handled by the useEffect above once the DB role is fetched
     } catch (err: any) {
-      console.error("Unexpected sign in error:", err);
       toast.error(err.message || "An unexpected error occurred");
       setIsSubmitting(false);
     }
   };
 
-  const mountedRef = useRef(true);
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
-
-  // Safety timeout: if we don't redirect in 10 seconds, reset the submitting state
-  useEffect(() => {
-    let timer: any;
-    if (isSubmitting) {
-      timer = setTimeout(() => {
-        if (mountedRef.current) {
-          console.log("Login safety timeout reached, resetting button state.");
-          setIsSubmitting(false);
-        }
-      }, 10000);
-    }
-    return () => clearTimeout(timer);
-  }, [isSubmitting]);
-
-  // The button should only be disabled if we are currently submitting OR 
-  // if the app is still doing its initial load check.
   const isButtonDisabled = isSubmitting || loading;
   const showSpinner = isSubmitting || (user && roleLoading);
 
