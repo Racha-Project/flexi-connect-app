@@ -86,11 +86,20 @@ function TrainerDetail() {
   const book = async (slotId: string) => {
     if (!user || !trainer?.tp) return;
     setBooking(slotId);
+    
+    const price = trainer.tp.price_per_session ?? 0;
+    const commissionRate = 10; // 10% commission
+    const commissionAmount = (price * commissionRate) / 100;
+    const netAmount = price - commissionAmount;
+
     const { error } = await supabase.from("bookings").insert({
       client_id: user.id,
       trainer_id: id,
       slot_id: slotId,
-      total_price: trainer.tp.price_per_session ?? 0,
+      total_price: price,
+      commission_rate: commissionRate,
+      commission_amount: commissionAmount,
+      net_amount: netAmount,
       booking_status: "pending",
     });
     if (error) {
