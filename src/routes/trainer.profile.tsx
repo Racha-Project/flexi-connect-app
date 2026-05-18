@@ -4,8 +4,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { AvatarUpload } from "@/components/auth/AvatarUpload";
 
 export const Route = createFileRoute("/trainer/profile")({
   component: () => <RoleGuard role="trainer"><P /></RoleGuard>,
@@ -37,6 +38,7 @@ function P() {
     const [{ error: e1 }, { error: e2 }] = await Promise.all([
       supabase.from("profiles").update({
         full_name: (form.full_name as string) || null,
+        avatar_url: (form.avatar_url as string) || null,
         gender: (form.gender as "male") || null,
         latitude: form.latitude ? Number(form.latitude) : null,
         longitude: form.longitude ? Number(form.longitude) : null,
@@ -67,6 +69,15 @@ function P() {
         <h1 className="font-display text-4xl font-bold">Trainer profile</h1>
         <p className="mt-2 text-muted-foreground">This is what clients see.</p>
       </div>
+
+      <div className="flex justify-center rounded-xl border border-border bg-card p-6">
+        <AvatarUpload
+          userId={user!.id}
+          url={(form.avatar_url as string) || null}
+          onUpload={(url) => setForm({ ...form, avatar_url: url })}
+        />
+      </div>
+
       <form onSubmit={save} className="space-y-5 rounded-xl border border-border bg-card p-6">
         <F label="Full name"><input value={(form.full_name as string) ?? ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className={cls} /></F>
         <F label="Bio"><textarea rows={3} value={(form.bio as string) ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} className={cls} /></F>
