@@ -17,6 +17,11 @@ function Login() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Debugging logs to help identify why the button might be stuck
+  useEffect(() => {
+    console.log("Login Page State:", { loading, roleLoading, isSubmitting, hasUser: !!user, role });
+  }, [loading, roleLoading, isSubmitting, user, role]);
+
   useEffect(() => {
     if (!loading && !roleLoading && user && role) {
       console.log("Redirecting to dashboard for role:", role);
@@ -26,9 +31,11 @@ function Login() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double submit
+
     setIsSubmitting(true);
     try {
-      console.log("Attempting sign in...");
+      console.log("Attempting sign in with:", email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
@@ -36,12 +43,10 @@ function Login() {
         toast.error(error.message);
         setIsSubmitting(false);
       } else {
-        console.log("Sign in successful, waiting for role...");
+        console.log("Sign in successful, waiting for role and redirect...");
         toast.success("Welcome back!");
-        // Safety timeout: if we don't redirect in 8 seconds, reset button
-        setTimeout(() => {
-          if (mountedRef.current) setIsSubmitting(false);
-        }, 8000);
+        // We DON'T set isSubmitting(false) here because we want to keep the loading state
+        // until the redirect happens. But we have the safety timeout below.
       }
     } catch (err: any) {
       console.error("Unexpected sign in error:", err);
@@ -55,7 +60,24 @@ function Login() {
     return () => { mountedRef.current = false; };
   }, []);
 
-  const isLoading = isSubmitting || loading || (user && roleLoading);
+  // Safety timeout: if we don't redirect in 10 seconds, reset the submitting state
+  useEffect(() => {
+    let timer: any;
+    if (isSubmitting) {
+      timer = setTimeout(() => {
+        if (mountedRef.current) {
+          console.log("Login safety timeout reached, resetting button state.");
+          setIsSubmitting(false);
+        }
+      }, 10000);
+    }
+    return () => clearTimeout(timer);
+  }, [isSubmitting]);
+
+  // The button should only be disabled if we are currently submitting OR 
+  // if the app is still doing its initial load check.
+  const isButtonDisabled = isSubmitting || loading;
+  const showSpinner = isSubmitting || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -93,10 +115,11 @@ function Login() {
             />
           </div>
           <button
-            disabled={isLoading}
+            type="submit"
+            disabled={isButtonDisabled}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
             Sign in
           </button>
         </form>

@@ -52,38 +52,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const initAuth = async () => {
+      console.log("Auth Provider: Initializing...");
       try {
-        const { data: { session: s } } = await supabase.auth.getSession();
+        // 1. Get initial session
+        const { data: { session: s }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
         if (!mounted) return;
 
         setSession(s);
         setUser(s?.user ?? null);
         
         if (s?.user) {
+          console.log("Auth Provider: User found, loading role...");
           await loadRole(s.user.id);
+        } else {
+          console.log("Auth Provider: No user found.");
         }
       } catch (err) {
-        console.error("Auth init error:", err);
+        console.error("Auth Provider: Initialization error:", err);
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          console.log("Auth Provider: Initialization complete.");
+          setLoading(false);
+        }
       }
     };
 
     initAuth();
 
+    // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evt, s) => {
-      console.log("Auth state change:", evt, s?.user?.id);
+      console.log("Auth Provider: Auth state change:", evt, s?.user?.id);
       if (!mounted) return;
 
       setSession(s);
       setUser(s?.user ?? null);
 
       if (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED") {
-        if (s?.user) await loadRole(s.user.id);
+        if (s?.user) {
+          await loadRole(s.user.id);
+        }
       } else if (evt === "SIGNED_OUT") {
         setRole(null);
       }
       
+      // Always ensure loading is false after a state change event is handled
       setLoading(false);
     });
 
