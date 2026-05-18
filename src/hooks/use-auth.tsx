@@ -9,6 +9,7 @@ interface AuthCtx {
   session: Session | null;
   role: AppRole | null;
   loading: boolean;
+  roleLoading: boolean;
   signOut: () => Promise<void>;
   refreshRole: () => Promise<void>;
 }
@@ -20,32 +21,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(false);
 
   const loadRole = async (uid: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", uid)
-      .maybeSingle();
-    setRole((data?.role as AppRole) ?? null);
+    setRoleLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      // If no role found, default to 'client' (shouldn't happen with trigger)
+      const userRole = (data?.role as AppRole) ?? "client";
+      setRole(userRole);
+    } catch (err) {
+      console.error("Error loading role:", err);
+      setRole("client");
+    } finally {
+      setRoleLoading(false);
+    }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evt, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_evt, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => loadRole(s.user.id), 0);
+        await loadRole(s.user.id);
       } else {
         setRole(null);
       }
+      setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) loadRole(s.user.id).finally(() => setLoading(false));
-      else setLoading(false);
+      if (s?.user) {
+        loadRole(s.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -58,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         role,
         loading,
+        roleLoading,
         signOut: async () => {
           await supabase.auth.signOut();
         },

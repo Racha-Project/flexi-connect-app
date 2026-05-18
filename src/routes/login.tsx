@@ -12,23 +12,27 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const nav = useNavigate();
-  const { user, role } = useAuth();
+  const { user, role, loading, roleLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && role) nav({ to: `/${role}/dashboard` as never });
-  }, [user, role, nav]);
+    if (!loading && !roleLoading && user && role) {
+      nav({ to: `/${role}/dashboard` as never });
+    }
+  }, [user, role, loading, roleLoading, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    setIsSubmitting(false);
     if (error) toast.error(error.message);
     else toast.success("Welcome back!");
   };
+
+  const isLoading = loading || roleLoading || isSubmitting;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -66,10 +70,10 @@ function Login() {
             />
           </div>
           <button
-            disabled={loading}
+            disabled={isLoading}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             Sign in
           </button>
         </form>
