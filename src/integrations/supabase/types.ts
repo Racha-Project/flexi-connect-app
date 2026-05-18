@@ -14,16 +14,362 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      availability_slots: {
+        Row: {
+          created_at: string
+          date: string
+          day_of_week: number | null
+          end_time: string
+          id: string
+          is_booked: boolean
+          start_time: string
+          trainer_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          day_of_week?: number | null
+          end_time: string
+          id?: string
+          is_booked?: boolean
+          start_time: string
+          trainer_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          day_of_week?: number | null
+          end_time?: string
+          id?: string
+          is_booked?: boolean
+          start_time?: string
+          trainer_id?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_status: Database["public"]["Enums"]["booking_status"]
+          client_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          slot_id: string
+          total_price: number | null
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          booking_status?: Database["public"]["Enums"]["booking_status"]
+          client_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slot_id: string
+          total_price?: number | null
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          booking_status?: Database["public"]["Enums"]["booking_status"]
+          client_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slot_id?: string
+          total_price?: number | null
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: true
+            referencedRelation: "availability_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pose_sessions: {
+        Row: {
+          accuracy_score: number | null
+          client_id: string
+          created_at: string
+          exercise_name: string
+          feedback_json: Json | null
+          id: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          client_id: string
+          created_at?: string
+          exercise_name: string
+          feedback_json?: Json | null
+          id?: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          client_id?: string
+          created_at?: string
+          exercise_name?: string
+          feedback_json?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          available_times: Json | null
+          avatar_url: string | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          email: string | null
+          fitness_goal: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name: string | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          preferred_experience:
+            | Database["public"]["Enums"]["experience_pref"]
+            | null
+          preferred_trainer_gender:
+            | Database["public"]["Enums"]["gender_type"]
+            | null
+          updated_at: string
+        }
+        Insert: {
+          available_times?: Json | null
+          avatar_url?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          email?: string | null
+          fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          latitude?: number | null
+          longitude?: number | null
+          preferred_experience?:
+            | Database["public"]["Enums"]["experience_pref"]
+            | null
+          preferred_trainer_gender?:
+            | Database["public"]["Enums"]["gender_type"]
+            | null
+          updated_at?: string
+        }
+        Update: {
+          available_times?: Json | null
+          avatar_url?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          email?: string | null
+          fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          preferred_experience?:
+            | Database["public"]["Enums"]["experience_pref"]
+            | null
+          preferred_trainer_gender?:
+            | Database["public"]["Enums"]["gender_type"]
+            | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          client_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          trainer_id: string
+        }
+        Insert: {
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          trainer_id: string
+        }
+        Update: {
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          trainer_id?: string
+        }
+        Relationships: []
+      }
+      trainer_matches: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          match_reason: Json | null
+          match_score: number
+          trainer_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          match_reason?: Json | null
+          match_score?: number
+          trainer_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          match_reason?: Json | null
+          match_score?: number
+          trainer_id?: string
+        }
+        Relationships: []
+      }
+      trainer_profiles: {
+        Row: {
+          bio: string | null
+          certifications: string[] | null
+          created_at: string
+          experience_years: number | null
+          gym_name: string | null
+          id: string
+          is_approved: boolean | null
+          is_suspended: boolean | null
+          price_per_session: number | null
+          rating: number | null
+          rating_count: number | null
+          specialties: string[] | null
+          training_location: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          certifications?: string[] | null
+          created_at?: string
+          experience_years?: number | null
+          gym_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_suspended?: boolean | null
+          price_per_session?: number | null
+          rating?: number | null
+          rating_count?: number | null
+          specialties?: string[] | null
+          training_location?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          certifications?: string[] | null
+          created_at?: string
+          experience_years?: number | null
+          gym_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_suspended?: boolean | null
+          price_per_session?: number | null
+          rating?: number | null
+          rating_count?: number | null
+          specialties?: string[] | null
+          training_location?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "client" | "trainer" | "admin"
+      booking_status:
+        | "pending"
+        | "accepted"
+        | "rejected"
+        | "cancelled"
+        | "completed"
+      experience_pref: "any" | "beginner" | "intermediate" | "advanced"
+      fitness_goal:
+        | "weight_loss"
+        | "muscle_gain"
+        | "body_recomposition"
+        | "strength_training"
+        | "general_fitness"
+      gender_type: "male" | "female" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +496,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["client", "trainer", "admin"],
+      booking_status: [
+        "pending",
+        "accepted",
+        "rejected",
+        "cancelled",
+        "completed",
+      ],
+      experience_pref: ["any", "beginner", "intermediate", "advanced"],
+      fitness_goal: [
+        "weight_loss",
+        "muscle_gain",
+        "body_recomposition",
+        "strength_training",
+        "general_fitness",
+      ],
+      gender_type: ["male", "female", "other"],
+    },
   },
 } as const
