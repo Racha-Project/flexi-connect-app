@@ -3,10 +3,13 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useRef, useEffect } from "react";
-import { Activity, Camera, Play, Square, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Activity, Camera, Play, Square, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Pose as MPPose, POSE_CONNECTIONS, Results } from "@mediapipe/pose";
+import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import { Camera as MPCamera } from "@mediapipe/camera_utils";
 
 export const Route = createFileRoute("/client/pose")({
   component: () => (
@@ -15,22 +18,6 @@ export const Route = createFileRoute("/client/pose")({
     </RoleGuard>
   ),
 });
-
-const EXERCISES = [
-  { id: "squat", name: "Squat", feedback: ["Lower your hips", "Keep your back straight", "Drive through your heels"] },
-  { id: "pushup", name: "Push-up", feedback: ["Engage your core", "Lower chest to ground", "Keep elbows close"] },
-  { id: "plank", name: "Plank", feedback: ["Hold straight line", "Tighten your glutes", "Breathe steadily"] },
-  { id: "lunge", name: "Lunge", feedback: ["Drop back knee toward ground", "Keep front knee over ankle"] },
-  { id: "bicep_curl", name: "Bicep Curl", feedback: ["Control the descent", "Don't swing your back"] },
-];
-
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Activity, Camera, Play, Square, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Pose as MPPose, POSE_CONNECTIONS, Results } from "@mediapipe/pose";
-import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-import { Camera as MPCamera } from "@mediapipe/camera_utils";
 
 const EXERCISES = [
   { 
