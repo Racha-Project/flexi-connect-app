@@ -14,6 +14,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClientProfileRouteImport } from './routes/client.profile'
+import { Route as ClientPoseRouteImport } from './routes/client.pose'
+import { Route as ClientMatchesRouteImport } from './routes/client.matches'
+import { Route as ClientDiscoverRouteImport } from './routes/client.discover'
+import { Route as ClientDashboardRouteImport } from './routes/client.dashboard'
+import { Route as ClientBookingsRouteImport } from './routes/client.bookings'
+import { Route as ClientTrainerIdRouteImport } from './routes/client.trainer.$id'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -40,6 +47,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientProfileRoute = ClientProfileRouteImport.update({
+  id: '/client/profile',
+  path: '/client/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientPoseRoute = ClientPoseRouteImport.update({
+  id: '/client/pose',
+  path: '/client/pose',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientMatchesRoute = ClientMatchesRouteImport.update({
+  id: '/client/matches',
+  path: '/client/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientDiscoverRoute = ClientDiscoverRouteImport.update({
+  id: '/client/discover',
+  path: '/client/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientDashboardRoute = ClientDashboardRouteImport.update({
+  id: '/client/dashboard',
+  path: '/client/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientBookingsRoute = ClientBookingsRouteImport.update({
+  id: '/client/bookings',
+  path: '/client/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientTrainerIdRoute = ClientTrainerIdRouteImport.update({
+  id: '/client/trainer/$id',
+  path: '/client/trainer/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +89,13 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/client/bookings': typeof ClientBookingsRoute
+  '/client/dashboard': typeof ClientDashboardRoute
+  '/client/discover': typeof ClientDiscoverRoute
+  '/client/matches': typeof ClientMatchesRoute
+  '/client/pose': typeof ClientPoseRoute
+  '/client/profile': typeof ClientProfileRoute
+  '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +103,13 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/client/bookings': typeof ClientBookingsRoute
+  '/client/dashboard': typeof ClientDashboardRoute
+  '/client/discover': typeof ClientDiscoverRoute
+  '/client/matches': typeof ClientMatchesRoute
+  '/client/pose': typeof ClientPoseRoute
+  '/client/profile': typeof ClientProfileRoute
+  '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +118,57 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/client/bookings': typeof ClientBookingsRoute
+  '/client/dashboard': typeof ClientDashboardRoute
+  '/client/discover': typeof ClientDiscoverRoute
+  '/client/matches': typeof ClientMatchesRoute
+  '/client/pose': typeof ClientPoseRoute
+  '/client/profile': typeof ClientProfileRoute
+  '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/dashboard' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/client/bookings'
+    | '/client/dashboard'
+    | '/client/discover'
+    | '/client/matches'
+    | '/client/pose'
+    | '/client/profile'
+    | '/client/trainer/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/login' | '/register'
-  id: '__root__' | '/' | '/about' | '/dashboard' | '/login' | '/register'
+  to:
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/client/bookings'
+    | '/client/dashboard'
+    | '/client/discover'
+    | '/client/matches'
+    | '/client/pose'
+    | '/client/profile'
+    | '/client/trainer/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/client/bookings'
+    | '/client/dashboard'
+    | '/client/discover'
+    | '/client/matches'
+    | '/client/pose'
+    | '/client/profile'
+    | '/client/trainer/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +177,13 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  ClientBookingsRoute: typeof ClientBookingsRoute
+  ClientDashboardRoute: typeof ClientDashboardRoute
+  ClientDiscoverRoute: typeof ClientDiscoverRoute
+  ClientMatchesRoute: typeof ClientMatchesRoute
+  ClientPoseRoute: typeof ClientPoseRoute
+  ClientProfileRoute: typeof ClientProfileRoute
+  ClientTrainerIdRoute: typeof ClientTrainerIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +223,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/client/profile': {
+      id: '/client/profile'
+      path: '/client/profile'
+      fullPath: '/client/profile'
+      preLoaderRoute: typeof ClientProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/pose': {
+      id: '/client/pose'
+      path: '/client/pose'
+      fullPath: '/client/pose'
+      preLoaderRoute: typeof ClientPoseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/matches': {
+      id: '/client/matches'
+      path: '/client/matches'
+      fullPath: '/client/matches'
+      preLoaderRoute: typeof ClientMatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/discover': {
+      id: '/client/discover'
+      path: '/client/discover'
+      fullPath: '/client/discover'
+      preLoaderRoute: typeof ClientDiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/dashboard': {
+      id: '/client/dashboard'
+      path: '/client/dashboard'
+      fullPath: '/client/dashboard'
+      preLoaderRoute: typeof ClientDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/bookings': {
+      id: '/client/bookings'
+      path: '/client/bookings'
+      fullPath: '/client/bookings'
+      preLoaderRoute: typeof ClientBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/trainer/$id': {
+      id: '/client/trainer/$id'
+      path: '/client/trainer/$id'
+      fullPath: '/client/trainer/$id'
+      preLoaderRoute: typeof ClientTrainerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +281,13 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  ClientBookingsRoute: ClientBookingsRoute,
+  ClientDashboardRoute: ClientDashboardRoute,
+  ClientDiscoverRoute: ClientDiscoverRoute,
+  ClientMatchesRoute: ClientMatchesRoute,
+  ClientPoseRoute: ClientPoseRoute,
+  ClientProfileRoute: ClientProfileRoute,
+  ClientTrainerIdRoute: ClientTrainerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
