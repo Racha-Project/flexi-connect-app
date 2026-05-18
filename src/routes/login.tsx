@@ -6,7 +6,7 @@ import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Login — LachaFit" }] }),
+  head: () => ({ meta: [{ title: "Login — Fitder" }] }),
   component: Login,
 });
 
@@ -38,11 +38,11 @@ function Login() {
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
             <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold">LachaFit</span>
+          <span className="font-display text-xl font-bold">Fitder</span>
         </Link>
-        <h1 className="font-display text-3xl font-bold">Welcome back</h1>
+        <h1 className="font-display text-3xl font-bold">Welcome to Fitder</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to keep training.
+          Log in to manage your training.
         </p>
         <form onSubmit={submit} className="mt-8 space-y-4">
           <div>

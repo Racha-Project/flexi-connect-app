@@ -38,7 +38,7 @@ function Landing() {
               <Dumbbell className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold tracking-tight">
-              LachaFit
+              Fitder
             </span>
           </Link>
           <div className="hidden items-center gap-8 text-sm md:flex">

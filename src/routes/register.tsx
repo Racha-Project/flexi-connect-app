@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Sign up — LachaFit" }] }),
+  head: () => ({ meta: [{ title: "Sign up — Fitder" }] }),
   component: Register,
 });
 
@@ -46,11 +46,11 @@ function Register() {
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
             <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold">LachaFit</span>
+          <span className="font-display text-xl font-bold">Fitder</span>
         </Link>
         <h1 className="font-display text-3xl font-bold">Create your account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Join the LachaFit community.
+          Join the Fitder community.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
