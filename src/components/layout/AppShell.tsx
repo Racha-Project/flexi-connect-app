@@ -16,6 +16,7 @@ import {
   Dumbbell,
   Menu,
   X,
+  Star,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
@@ -45,6 +46,7 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { to: "/admin/users", label: "Users", icon: Users },
     { to: "/admin/trainers", label: "Trainers", icon: ShieldCheck },
     { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+    { to: "/admin/reviews", label: "Reviews", icon: Star },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   ],
 };
