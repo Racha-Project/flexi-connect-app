@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,8 @@ function Register() {
     }
   };
 
-  const isLoading = isSubmitting || authLoading || (user && roleLoading);
+  const isButtonDisabled = isSubmitting || authLoading;
+  const showSpinner = isSubmitting || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -118,10 +120,10 @@ function Register() {
           </div>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isButtonDisabled}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
             Sign up
           </button>
         </form>

@@ -24,26 +24,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roleLoading, setRoleLoading] = useState(false);
 
   const loadRole = async (uid: string) => {
+    // If no UID or already loading this UID, skip
+    if (!uid) return;
+    
+    // Check if we're already loading this role to prevent duplicate calls
+    if (roleLoading) {
+      console.log("Auth Provider: Role already loading, skipping duplicate call.");
+      return;
+    }
+    
     setRoleLoading(true);
-    console.log("Loading role for user:", uid);
+    console.log("Auth Provider: Loading role for user:", uid);
+    
+    // Set a timeout to clear roleLoading if Supabase is slow
+    const timeout = setTimeout(() => {
+      console.warn("Auth Provider: roleLoading timeout reached");
+      setRoleLoading(false);
+      if (!role) setRole("client");
+    }, 6000);
+
     try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", uid)
-        .order("role", { ascending: true }) // Ensure deterministic order if multiple
+        .order("role", { ascending: true })
         .limit(1)
         .maybeSingle();
       
       if (error) throw error;
       
       const userRole = (data?.role as AppRole) || "client";
-      console.log("Role loaded successfully:", userRole);
+      console.log("Auth Provider: Role loaded successfully:", userRole);
       setRole(userRole);
     } catch (err) {
-      console.error("Critical: Failed to load role:", err);
-      setRole("client"); // Fallback to client to prevent lock-out
+      console.error("Auth Provider: Critical error loading role:", err);
+      setRole("client");
     } finally {
+      clearTimeout(timeout);
       setRoleLoading(false);
     }
   };
