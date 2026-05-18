@@ -12,31 +12,45 @@ export const Route = createFileRoute("/register")({
 
 function Register() {
   const nav = useNavigate();
+  const { user, role: userRole, loading: authLoading, roleLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"client" | "trainer">("client");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, role },
-      },
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: fullName, role },
+        },
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setIsSubmitting(false);
+      } else {
+        toast.success("Account created — signing you in…");
+        // Safety redirect if auth change doesn't trigger it
+        setTimeout(() => {
+          nav({ to: `/${role}/dashboard` as never });
+        }, 2000);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+      setIsSubmitting(false);
     }
-    toast.success("Account created — signing you in…");
-    setTimeout(() => nav({ to: `/${role}/dashboard` as never }), 800);
   };
+
+  const isLoading = isSubmitting || authLoading || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -103,11 +117,12 @@ function Register() {
             />
           </div>
           <button
-            disabled={loading}
+            type="submit"
+            disabled={isLoading}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Create account
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Sign up
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">

@@ -51,58 +51,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const initAuth = async () => {
-      console.log("Auth Provider: Initializing...");
-      try {
-        // 1. Get initial session
-        const { data: { session: s }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        
-        if (!mounted) return;
+    // Safety fallback: Force loading to false after 5 seconds no matter what
+    const timer = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth Provider: Safety fallback triggered (loading forced to false)");
+        setLoading(false);
+      }
+    }, 5000);
 
+    const initAuth = async () => {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (!mounted) return;
         setSession(s);
         setUser(s?.user ?? null);
-        
-        if (s?.user) {
-          console.log("Auth Provider: User found, loading role...");
-          await loadRole(s.user.id);
-        } else {
-          console.log("Auth Provider: No user found.");
-        }
+        if (s?.user) await loadRole(s.user.id);
       } catch (err) {
-        console.error("Auth Provider: Initialization error:", err);
+        console.error("Auth Provider: Init error:", err);
       } finally {
-        if (mounted) {
-          console.log("Auth Provider: Initialization complete.");
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
     initAuth();
 
-    // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evt, s) => {
-      console.log("Auth Provider: Auth state change:", evt, s?.user?.id);
       if (!mounted) return;
-
       setSession(s);
       setUser(s?.user ?? null);
 
-      if (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED") {
-        if (s?.user) {
-          await loadRole(s.user.id);
-        }
+      if (s?.user && (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED")) {
+        await loadRole(s.user.id);
       } else if (evt === "SIGNED_OUT") {
         setRole(null);
       }
-      
-      // Always ensure loading is false after a state change event is handled
       setLoading(false);
     });
 
     return () => {
       mounted = false;
+      clearTimeout(timer);
       subscription.unsubscribe();
     };
   }, []);
