@@ -24,21 +24,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roleLoading, setRoleLoading] = useState(false);
 
   const loadRole = async (uid: string) => {
+    if (roleLoading) return;
     setRoleLoading(true);
     try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", uid)
+        .limit(1)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase role fetch error:", error);
+        throw error;
+      }
       
-      // If no role found, default to 'client' (shouldn't happen with trigger)
-      const userRole = (data?.role as AppRole) ?? "client";
+      const userRole = (data?.role as AppRole) || "client";
+      console.log("Loaded role for user:", uid, userRole);
       setRole(userRole);
     } catch (err) {
-      console.error("Error loading role:", err);
+      console.error("Failed to load role, falling back to client:", err);
       setRole("client");
     } finally {
       setRoleLoading(false);

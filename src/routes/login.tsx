@@ -26,13 +26,22 @@ function Login() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setIsSubmitting(false);
-    if (error) toast.error(error.message);
-    else toast.success("Welcome back!");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast.error(error.message);
+        setIsSubmitting(false); // Reset only on error, on success useEffect will redirect
+      } else {
+        toast.success("Welcome back!");
+        // We don't set isSubmitting(false) here to keep the button loading while redirecting
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred");
+      setIsSubmitting(false);
+    }
   };
 
-  const isLoading = loading || roleLoading || isSubmitting;
+  const isLoading = loading || (user && roleLoading) || isSubmitting;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
