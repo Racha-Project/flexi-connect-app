@@ -11,6 +11,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { Logo } from "@/components/layout/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,9 +38,7 @@ function Landing() {
       <nav className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-              <Dumbbell className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <Logo />
             <span className="font-display text-xl font-bold tracking-tight">
               Fitder
             </span>

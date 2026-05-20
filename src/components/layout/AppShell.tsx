@@ -24,6 +24,7 @@ import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { ChatBot } from "./ChatBot";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { Logo } from "./Logo";
 
 type NavItem = { to: string; label: string; icon: typeof Search };
 
@@ -72,9 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       >
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <Dumbbell className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <Logo />
           <span className="font-display text-xl font-bold tracking-tight">
             Fitder
           </span>

@@ -6,6 +6,7 @@ import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { Logo } from "@/components/layout/Logo";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Sign up — Fitder" }] }),
@@ -49,9 +50,7 @@ function Register() {
       <div className="absolute inset-0 grid-bg opacity-20" />
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-8">
         <Link to="/" className="mb-8 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
-            <Dumbbell className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <Logo className="h-9 w-9" iconClassName="h-5 w-5" />
           <span className="font-display text-xl font-bold">Fitder</span>
         </Link>
         <h1 className="font-display text-3xl font-bold">{t("auth.register_title")}</h1>
