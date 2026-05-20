@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Sign up — Fitder" }] }),
@@ -12,6 +14,7 @@ export const Route = createFileRoute("/register")({
 
 function Register() {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -40,6 +43,9 @@ function Register() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="absolute inset-0 grid-bg opacity-20" />
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-8">
         <Link to="/" className="mb-8 flex items-center gap-2">
@@ -48,9 +54,9 @@ function Register() {
           </div>
           <span className="font-display text-xl font-bold">Fitder</span>
         </Link>
-        <h1 className="font-display text-3xl font-bold">Create your account</h1>
+        <h1 className="font-display text-3xl font-bold">{t("auth.register_title")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Join the Fitder community.
+          {t("auth.register_subtitle")}
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
@@ -66,14 +72,14 @@ function Register() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              I'm a {r}
+              {r === "client" ? t("auth.im_a_client") : t("auth.im_a_coach")}
             </button>
           ))}
         </div>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">Full name</label>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground">{t("auth.full_name")}</label>
             <input
               required
               value={fullName}
@@ -82,7 +88,7 @@ function Register() {
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">Email</label>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground">{t("auth.email")}</label>
             <input
               type="email"
               required
@@ -92,7 +98,7 @@ function Register() {
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">Password</label>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground">{t("auth.password")}</label>
             <input
               type="password"
               required
@@ -107,13 +113,13 @@ function Register() {
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Create account
+            {t("auth.sign_up")}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already registered?{" "}
+          {t("auth.already_have_account")}{" "}
           <Link to="/login" className="font-semibold text-primary hover:underline">
-            Sign in
+            {t("auth.sign_in")}
           </Link>
         </p>
       </div>

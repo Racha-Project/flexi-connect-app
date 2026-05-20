@@ -19,41 +19,44 @@ import {
   Star,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { ChatBot } from "./ChatBot";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type NavItem = { to: string; label: string; icon: typeof Search };
 
 const navByRole: Record<AppRole, NavItem[]> = {
   client: [
-    { to: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/client/discover", label: "Discover", icon: Search },
-    { to: "/client/matches", label: "Matches", icon: Sparkles },
-    { to: "/client/bookings", label: "Bookings", icon: History },
-    { to: "/client/pose", label: "AI Pose", icon: Activity },
-    { to: "/client/profile", label: "Profile", icon: User },
+    { to: "/client/dashboard", label: "common.dashboard", icon: LayoutDashboard },
+    { to: "/client/discover", label: "common.discover", icon: Search },
+    { to: "/client/matches", label: "common.matches", icon: Sparkles },
+    { to: "/client/bookings", label: "common.bookings", icon: History },
+    { to: "/client/pose", label: "common.ai_pose", icon: Activity },
+    { to: "/client/profile", label: "common.profile", icon: User },
   ],
   trainer: [
-    { to: "/trainer/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/trainer/availability", label: "Availability", icon: Calendar },
-    { to: "/trainer/bookings", label: "Bookings", icon: CalendarRange },
-    { to: "/trainer/clients", label: "Clients", icon: Users },
-    { to: "/trainer/earnings", label: "Earnings", icon: Wallet },
-    { to: "/trainer/profile", label: "Profile", icon: User },
+    { to: "/trainer/dashboard", label: "common.dashboard", icon: LayoutDashboard },
+    { to: "/trainer/availability", label: "common.availability", icon: Calendar },
+    { to: "/trainer/bookings", label: "common.bookings", icon: CalendarRange },
+    { to: "/trainer/clients", label: "common.clients", icon: Users },
+    { to: "/trainer/earnings", label: "common.earnings", icon: Wallet },
+    { to: "/trainer/profile", label: "common.profile", icon: User },
   ],
   admin: [
-    { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
-    { to: "/admin/users", label: "Users", icon: Users },
-    { to: "/admin/trainers", label: "Trainers", icon: ShieldCheck },
-    { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-    { to: "/admin/reviews", label: "Reviews", icon: Star },
-    { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/admin/dashboard", label: "common.overview", icon: LayoutDashboard },
+    { to: "/admin/users", label: "common.users", icon: Users },
+    { to: "/admin/trainers", label: "common.trainers", icon: ShieldCheck },
+    { to: "/admin/bookings", label: "common.bookings", icon: CalendarRange },
+    { to: "/admin/reviews", label: "common.reviews", icon: Star },
+    { to: "/admin/analytics", label: "common.analytics", icon: BarChart3 },
   ],
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { role, user, signOut } = useAuth();
+  const { t } = useTranslation();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
@@ -92,7 +95,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <it.icon className="h-4 w-4" />
-                {it.label}
+                {t(it.label)}
               </Link>
             );
           })}
@@ -111,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             }}
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut className="h-4 w-4" /> {t("common.sign_out")}
           </button>
         </div>
       </aside>
@@ -135,12 +138,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="hidden font-display text-sm uppercase tracking-widest text-muted-foreground lg:block">
             {role} · Fitder
           </div>
-          <div className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            <div className="text-sm text-muted-foreground">
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-8">{children}</main>

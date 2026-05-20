@@ -26,6 +26,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { user, role } = useAuth();
+  const { t } = useTranslation();
   const dashHref = role ? `/${role}/dashboard` : "/login";
 
   return (
@@ -43,33 +44,34 @@ function Landing() {
           </Link>
           <div className="hidden items-center gap-8 text-sm md:flex">
             <Link to="/about" className="text-muted-foreground hover:text-foreground">
-              About
+              {t("common.about")}
             </Link>
             <a href="#how" className="text-muted-foreground hover:text-foreground">
-              How it works
+              {t("common.how_it_works")}
             </a>
             <a href="#features" className="text-muted-foreground hover:text-foreground">
-              Features
+              {t("common.features")}
             </a>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {user ? (
               <Link
                 to={dashHref}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
               >
-                Dashboard
+                {t("common.dashboard")}
               </Link>
             ) : (
               <>
                 <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
-                  Login
+                  {t("common.login")}
                 </Link>
                 <Link
                   to="/register"
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
                 >
-                  Get started
+                  {t("common.get_started")}
                 </Link>
               </>
             )}
@@ -87,26 +89,29 @@ function Landing() {
             AI-Powered Trainer Matching
           </div>
           <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl lg:text-8xl">
-            Train with the <span className="text-gradient-lime">perfect</span> coach.
+            {t("landing.hero_title").split("perfect").map((part, i, arr) => (
+              <span key={i}>
+                {part}
+                {i < arr.length - 1 && <span className="text-gradient-lime">perfect</span>}
+              </span>
+            ))}
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground md:text-lg">
-            LachaFit matches you with personal trainers nearby based on your
-            goals, budget, and schedule — then helps you train better with
-            real-time AI posture correction.
+            {t("landing.hero_subtitle")}
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to={user ? dashHref : "/register"}
               className="group inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3.5 font-display text-base font-bold text-primary-foreground transition hover:opacity-90"
             >
-              Find your trainer
+              {t("common.find_your_trainer")}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
             <Link
               to="/register"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-7 py-3.5 font-display text-base font-semibold text-foreground transition hover:border-primary/50"
             >
-              I'm a trainer
+              {t("common.im_a_trainer")}
             </Link>
           </div>
 
