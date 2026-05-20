@@ -39,8 +39,8 @@ export function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
       <div className="glass mx-auto flex max-w-6xl items-center justify-between rounded-full px-5 py-2.5">
-        <Link to="/" className="font-display text-lg font-bold tracking-tight">
-          atelier<span className="text-primary">.</span>
+        <Link to="/" className="font-display text-xl font-bold">
+          Lacha<span className="text-primary">.</span>
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {nav.map((n) => (

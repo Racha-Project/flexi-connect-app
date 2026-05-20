@@ -6,8 +6,8 @@ import { PublicLayout } from "@/components/PublicLayout";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — Atelier" },
-      { name: "description", content: "About me — designer & engineer crafting premium digital experiences." },
+      { title: "About — Lacha" },
+      { name: "description", content: "Learn about my journey and approach to digital design." },
     ],
   }),
   component: AboutPage,
@@ -19,7 +19,7 @@ const skills = [
 ];
 
 const timeline = [
-  { year: "2026", title: "Independent practice", body: "Launched Atelier — full-time freelance for product & brand work." },
+  { year: "2026", title: "Independent practice", body: "Launched Lacha — full-time freelance for product & brand work." },
   { year: "2024", title: "Senior Product Designer · Orbit", body: "Led design system and dashboard suite shipped to thousands of teams." },
   { year: "2022", title: "Design Lead · Northwind", body: "Built the internal operator console used daily by 400+ staff." },
   { year: "2019", title: "Studied design & CS", body: "Combined visual design and engineering from the start." },

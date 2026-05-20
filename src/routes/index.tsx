@@ -9,8 +9,8 @@ import { useSiteSettings } from "@/hooks/use-site-settings";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Atelier — Designer & developer for ambitious teams" },
-      { name: "description", content: "Portfolio, digital products, and freelance services." },
+      { title: "Lacha — Designer & developer for ambitious teams" },
+      { name: "description", content: "Crafting modern digital products and experiences." },
     ],
   }),
   component: HomePage,

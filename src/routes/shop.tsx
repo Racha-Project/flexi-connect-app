@@ -8,8 +8,8 @@ import { PublicLayout } from "@/components/PublicLayout";
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop — Atelier digital products" },
-      { name: "description", content: "Templates, icon sets, and starter kits crafted for designers and builders." },
+      { title: "Shop — Lacha digital products" },
+      { name: "description", content: "Premium assets for designers and developers." },
     ],
   }),
   component: ShopPage,

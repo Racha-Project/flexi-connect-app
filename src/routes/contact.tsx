@@ -9,8 +9,8 @@ import { useSiteSettings } from "@/hooks/use-site-settings";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — Atelier" },
-      { name: "description", content: "Get in touch about a project, collaboration, or product question." },
+      { title: "Contact — Lacha" },
+      { name: "description", content: "Let's collaborate on your next project." },
     ],
   }),
   component: ContactPage,
@@ -41,7 +41,7 @@ function ContactPage() {
             <p className="mt-6 max-w-md text-muted-foreground">For projects, collaborations or product questions — drop a note and I'll reply within 48 hours.</p>
 
             <div className="mt-10 space-y-4">
-              <Item icon={Mail} label="Email" value={settings?.contact_email ?? "hello@atelier.studio"} />
+              <Item icon={Mail} label="Email" value={settings?.contact_email ?? "hello@lacha.studio"} />
               {settings?.contact_phone && <Item icon={Phone} label="Phone" value={settings.contact_phone} />}
               <Item icon={MapPin} label="Based in" value="Stockholm · Remote worldwide" />
             </div>

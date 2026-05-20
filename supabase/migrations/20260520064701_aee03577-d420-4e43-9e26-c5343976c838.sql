@@ -240,10 +240,10 @@ CREATE POLICY "product files admin all" ON storage.objects FOR ALL TO authentica
 -- Seed singleton site_settings
 INSERT INTO public.site_settings (site_name, hero_title, hero_subtitle, about_text, contact_email, social_links)
 VALUES (
-  'Atelier',
+  'Lacha',
   'Designing premium digital products that move people.',
   'Independent designer & developer building portfolios, products and services for ambitious teams.',
   'I''m a multidisciplinary designer and engineer focused on crafting modern interfaces, identity systems, and digital products. Available for freelance projects and collaborations.',
-  'hello@atelier.studio',
+  'hello@lacha.studio',
   '{"twitter":"https://twitter.com","github":"https://github.com","linkedin":"https://linkedin.com","dribbble":"https://dribbble.com"}'::jsonb
 );

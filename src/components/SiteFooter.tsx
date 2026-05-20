@@ -12,7 +12,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-4">
         <div className="md:col-span-2">
           <Link to="/" className="font-display text-2xl font-bold">
-            {settings?.site_name ?? "atelier"}<span className="text-primary">.</span>
+            {settings?.site_name ?? "Lacha"}<span className="text-primary">.</span>
           </Link>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             Designing premium digital products, identities and services for ambitious teams worldwide.
@@ -30,7 +30,7 @@ export function SiteFooter() {
         </div>
         <div>
           <h4 className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">Contact</h4>
-          <p className="text-sm text-muted-foreground">{settings?.contact_email ?? "hello@atelier.studio"}</p>
+          <p className="text-sm text-muted-foreground">{settings?.contact_email ?? "hello@lacha.studio"}</p>
           <div className="mt-4 flex gap-2">
             {social.twitter && <a href={social.twitter} aria-label="Twitter" className="rounded-full border border-border p-2 hover:border-primary hover:text-primary"><Twitter className="h-4 w-4" /></a>}
             {social.github && <a href={social.github} aria-label="GitHub" className="rounded-full border border-border p-2 hover:border-primary hover:text-primary"><Github className="h-4 w-4" /></a>}
@@ -40,7 +40,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="mx-auto mt-12 flex max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-6 text-xs text-muted-foreground">
-        <span>© {year} {settings?.site_name ?? "Atelier"}. All rights reserved.</span>
+        <span>© {year} {settings?.site_name ?? "Lacha"}. All rights reserved.</span>
         <Link to="/admin/login" className="hover:text-primary">Admin</Link>
       </div>
     </footer>

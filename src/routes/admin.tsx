@@ -80,7 +80,7 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 flex-col border-r border-border bg-surface/50 p-4 md:flex">
-        <Link to="/" className="font-display px-2 py-3 text-lg font-bold">atelier<span className="text-primary">.</span></Link>
+        <Link to="/" className="font-display px-2 py-3 text-lg font-bold">Lacha<span className="text-primary">.</span></Link>
         <nav className="mt-4 flex-1 space-y-0.5">
           {items.map((it) => {
             const active = it.exact ? path === it.to : path.startsWith(it.to);

@@ -9,8 +9,8 @@ import { PublicLayout } from "@/components/PublicLayout";
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
     meta: [
-      { title: "Portfolio — Atelier" },
-      { name: "description", content: "Selected work across product design, branding, and web." },
+      { title: "Portfolio — Lacha" },
+      { name: "description", content: "Selected design and engineering projects." },
     ],
   }),
   component: PortfolioPage,

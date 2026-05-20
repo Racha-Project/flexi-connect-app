@@ -9,8 +9,8 @@ import { PublicLayout } from "@/components/PublicLayout";
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services — Atelier freelance design & development" },
-      { name: "description", content: "Brand identity, product design, and bespoke websites — booked as focused engagements." },
+      { title: "Services — Lacha freelance design & development" },
+      { name: "description", content: "Professional design and engineering services." },
     ],
   }),
   component: ServicesPage,
