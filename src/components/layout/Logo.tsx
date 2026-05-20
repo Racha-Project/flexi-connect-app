@@ -10,7 +10,7 @@ export function Logo({ className, iconClassName }: LogoProps) {
   // หากคุณมีไฟล์โลโก้แล้ว ให้เปลี่ยนจาก <Dumbbell /> เป็น <img src="/logo.png" /> หรือนำเข้าจาก assets
   // ตัวอย่าง: import logoImg from "@/assets/logo.png";
   
-  const hasLogoFile = false; // เปลี่ยนเป็น true เมื่อคุณอัปโหลดไฟล์โลโก้แล้ว
+  const hasLogoFile = true; // เปลี่ยนเป็น true เมื่อคุณอัปโหลดไฟล์โลโก้แล้ว
 
   return (
     <div className={cn("flex h-8 w-8 items-center justify-center rounded-md bg-primary", className)}>
