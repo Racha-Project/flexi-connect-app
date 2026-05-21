@@ -9,7 +9,7 @@ export interface RankedTrainer extends TrainerCardData {
 export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTrainer[]> {
   const { data: trainers, error } = await supabase
     .from("trainer_profiles")
-    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, is_approved, is_suspended")
+    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, training_location, is_approved, is_suspended")
     .eq("is_approved", true)
     .eq("is_suspended", false);
   if (error) throw error;
@@ -33,12 +33,16 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
         experience_years: t.experience_years,
         price_per_session: Number(t.price_per_session ?? 0),
         rating: Number(t.rating ?? 0),
+        training_location: t.training_location,
         profile: {
           gender: p?.gender ?? null,
           latitude: p?.latitude ?? null,
           longitude: p?.longitude ?? null,
         },
       });
+
+      if (!match) return null;
+
       return {
         user_id: t.user_id,
         full_name: p?.full_name ?? null,
@@ -52,5 +56,6 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
         match,
       } as RankedTrainer;
     })
+    .filter((t): t is RankedTrainer => t !== null)
     .sort((a, b) => b.match.score - a.match.score);
 }
