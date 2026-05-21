@@ -9,7 +9,7 @@ export interface RankedTrainer extends TrainerCardData {
 export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTrainer[]> {
   const { data: trainers, error } = await supabase
     .from("trainer_profiles")
-    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, training_location, is_approved, is_suspended")
+    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, training_location, is_approved, is_suspended, certifications")
     .eq("is_approved", true)
     .eq("is_suspended", false);
   if (error) throw error;
@@ -21,11 +21,29 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
     .select("id, full_name, avatar_url, gender, latitude, longitude")
     .in("id", ids);
 
+  // Fetch availability slots count for each trainer
+  const { data: slots } = await supabase
+    .from("availability_slots")
+    .select("trainer_id, id")
+    .in("trainer_id", ids)
+    .eq("is_booked", false);
+
+  const slotMap = new Map<string, number>();
+  slots?.forEach(s => {
+    slotMap.set(s.trainer_id, (slotMap.get(s.trainer_id) ?? 0) + 1);
+  });
+
   const profMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
   return trainers
     .map((t) => {
       const p = profMap.get(t.user_id);
+      
+      // Calculate profile completeness
+      const fields = [t.bio, t.specialties, t.experience_years, t.price_per_session, t.gym_name, t.training_location, t.certifications, p?.full_name, p?.avatar_url];
+      const filled = fields.filter(f => f !== null && f !== undefined && f !== "").length;
+      const completeness = filled / fields.length;
+
       const match = scoreTrainer(prefs, {
         user_id: t.user_id,
         specialties: t.specialties,
@@ -34,6 +52,10 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
         price_per_session: Number(t.price_per_session ?? 0),
         rating: Number(t.rating ?? 0),
         training_location: t.training_location,
+        availability_slots: Array(slotMap.get(t.user_id) ?? 0).fill({}), // Using count as mock array
+        profile_completeness: completeness,
+        retention_rate: 0.85, // Mock value as DB field doesn't exist yet
+        training_style: "flexible", // Mock value
         profile: {
           gender: p?.gender ?? null,
           latitude: p?.latitude ?? null,
