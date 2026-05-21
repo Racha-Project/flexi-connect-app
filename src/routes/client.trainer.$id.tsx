@@ -40,31 +40,28 @@ function TrainerDetail() {
   const { data: reviews } = useQuery({
     queryKey: ["trainer-reviews", id],
     queryFn: async () => {
-      // Try fetching with explicit relationship first
-      const { data, error } = await supabase
+      // Fetch reviews and profiles separately if join is problematic
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from("reviews")
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          client_id,
-          client:profiles!reviews_client_id_fkey(full_name, avatar_url)
-        `)
+        .select("*")
         .eq("trainer_id", id)
         .order("created_at", { ascending: false });
       
-      if (error) {
-        console.error("Error fetching reviews with join:", error);
-        // Fallback: fetch without join if join fails
-        const { data: simpleData } = await supabase
-          .from("reviews")
-          .select("*")
-          .eq("trainer_id", id)
-          .order("created_at", { ascending: false });
-        return simpleData ?? [];
-      }
-      return data ?? [];
+      if (reviewsError) throw reviewsError;
+      if (!reviewsData || reviewsData.length === 0) return [];
+
+      const clientIds = reviewsData.map(r => r.client_id);
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", clientIds);
+
+      const profileMap = new Map((profilesData ?? []).map(p => [p.id, p]));
+
+      return reviewsData.map(r => ({
+        ...r,
+        client: profileMap.get(r.client_id)
+      }));
     },
   });
 
