@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, Star, Sparkles, DollarSign, CheckCircle2 } from "lucide-react";
 import type { MatchResult } from "@/lib/matching";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +28,15 @@ export function TrainerCard({
   trainer: TrainerCardData;
   match?: MatchResult;
 }) {
+  const getAvatarUrl = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const fullAvatarUrl = getAvatarUrl(trainer.avatar_url);
+
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/50 hover:glow-lime">
       <Link
@@ -47,10 +57,10 @@ export function TrainerCard({
           </div>
         )}
         <div className="relative aspect-[4/3] overflow-hidden bg-surface-elevated">
-          {trainer.avatar_url ? (
+          {fullAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={trainer.avatar_url}
+              src={fullAvatarUrl}
               alt={trainer.full_name ?? "Trainer"}
               className="h-full w-full object-cover transition group-hover:scale-105"
             />
