@@ -120,16 +120,6 @@ function TrainerDetail() {
 
       if (error) throw error;
 
-      // Update trainer rating
-      const { data: allReviews } = await supabase.from("reviews").select("rating").eq("trainer_id", id);
-      if (allReviews) {
-        const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-        await supabase
-          .from("trainer_profiles")
-          .update({ rating: avg, rating_count: allReviews.length })
-          .eq("user_id", id);
-      }
-
       toast.success("Review submitted!");
       setComment("");
       qc.invalidateQueries({ queryKey: ["trainer-reviews", id] });
@@ -147,12 +137,28 @@ function TrainerDetail() {
   const { tp, prof } = trainer;
   if (!tp) return <div>Trainer not found.</div>;
 
+  const getAvatarUrl = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const fullAvatarUrl = getAvatarUrl(prof?.avatar_url);
+
+  // Cold Start Detection
+  const createdAt = new Date(tp.created_at);
+  const now = new Date();
+  const daysSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+  const isColdStart = daysSinceCreated <= 30;
+  const displayRating = (tp.rating === 0 && isColdStart) ? 3.5 : (tp.rating ?? 0);
+
   return (
     <div className="space-y-8">
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         <div className="aspect-square overflow-hidden rounded-xl border border-border bg-surface-elevated">
-          {prof?.avatar_url ? (
-            <img src={prof.avatar_url} alt={prof.full_name ?? ""} className="h-full w-full object-cover" />
+          {fullAvatarUrl ? (
+            <img src={fullAvatarUrl} alt={prof?.full_name ?? ""} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center font-display text-7xl font-bold text-primary/40">
               {prof?.full_name?.[0]?.toUpperCase() ?? "T"}
@@ -167,7 +173,7 @@ function TrainerDetail() {
             </div>
           )}
           <div className="mt-4 flex flex-wrap gap-4">
-            <Stat icon={Star} label="Rating" value={`${Number(tp.rating ?? 0).toFixed(1)} / 5`} />
+            <Stat icon={Star} label="Rating" value={`${Number(displayRating).toFixed(1)} / 5`} />
             <Stat icon={Award} label="Experience" value={`${tp.experience_years ?? 0} yrs`} />
             <Stat icon={DollarSign} label="Price" value={`$${tp.price_per_session ?? 0}`} />
           </div>
@@ -227,33 +233,36 @@ function TrainerDetail() {
             </div>
           ) : (
             <div className="space-y-4">
-              {reviews.map((r: any) => (
-                <div key={r.id} className="rounded-xl border border-border bg-card p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
-                      {r.client?.avatar_url ? (
-                        <img src={r.client.avatar_url} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center font-bold text-primary/40">
-                          {r.client?.full_name?.[0]?.toUpperCase() ?? "U"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold">{r.client?.full_name}</div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={cn("h-3 w-3", i < r.rating ? "fill-primary text-primary" : "text-muted")} />
-                          ))}
-                        </div>
+              {reviews.map((r: any) => {
+                const clientAvatar = getAvatarUrl(r.client?.avatar_url);
+                return (
+                  <div key={r.id} className="rounded-xl border border-border bg-card p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
+                        {clientAvatar ? (
+                          <img src={clientAvatar} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-bold text-primary/40">
+                            {r.client?.full_name?.[0]?.toUpperCase() ?? "U"}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold">{r.client?.full_name}</div>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={cn("h-3 w-3", i < r.rating ? "fill-primary text-primary" : "text-muted")} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
+                      </div>
                     </div>
+                    <p className="mt-3 text-sm text-muted-foreground italic">"{r.comment}"</p>
                   </div>
-                  <p className="mt-3 text-sm text-muted-foreground italic">"{r.comment}"</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
