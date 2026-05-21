@@ -40,14 +40,19 @@ function TrainerDetail() {
   const { data: reviews } = useQuery({
     queryKey: ["trainer-reviews", id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("reviews")
         .select(`
           *,
-          client:profiles(full_name, avatar_url)
+          client:profiles!reviews_client_id_fkey(full_name, avatar_url)
         `)
         .eq("trainer_id", id)
         .order("created_at", { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching reviews:", error);
+        return [];
+      }
       return data ?? [];
     },
   });
