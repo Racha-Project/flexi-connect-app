@@ -18,6 +18,7 @@ export interface TrainerCardData {
   experience_years: number | null;
   price_per_session: number | null;
   rating: number | null;
+  rating_count: number | null;
   gym_name: string | null;
 }
 
@@ -104,12 +105,15 @@ export function TrainerCard({
             <h3 className="font-display text-lg font-semibold leading-tight">
               {trainer.full_name ?? "Trainer"}
             </h3>
-            <div className="flex items-center gap-1 text-sm">
+            <div className="flex items-center gap-1.5 text-sm">
               <Star className="h-3.5 w-3.5 fill-primary text-primary" />
               <span className="font-semibold">
                 {trainer.rating === 0 && match?.badges.includes("New Trainer") 
                   ? "3.5" 
                   : (trainer.rating && trainer.rating > 0 ? trainer.rating.toFixed(1) : "0.0")}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                ({trainer.rating_count ?? 0} reviews)
               </span>
             </div>
           </div>

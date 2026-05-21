@@ -79,6 +79,7 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
         price_per_session: Number(t.price_per_session ?? 0),
         rating: Number(t.rating ?? 0),
         gym_name: t.gym_name,
+        rating_count: Number(t.rating_count ?? 0),
         match,
       } as RankedTrainer;
     })

@@ -44,7 +44,7 @@ function TrainerDetail() {
         .from("reviews")
         .select(`
           *,
-          client:profiles!client_id(full_name, avatar_url)
+          client:profiles(full_name, avatar_url)
         `)
         .eq("trainer_id", id)
         .order("created_at", { ascending: false });
