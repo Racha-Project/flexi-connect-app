@@ -35,8 +35,12 @@ function Matches() {
         budget_max: profile?.budget_max,
         preferred_trainer_gender: profile?.preferred_trainer_gender,
         preferred_experience: profile?.preferred_experience,
+        experience_level: profile?.experience_level,
         latitude: profile?.latitude,
         longitude: profile?.longitude,
+        training_style_pref: profile?.preferred_style,
+        sessions_per_week_pref: profile?.sessions_per_week,
+        training_modality_pref: profile?.training_modality,
       }),
     enabled: !!profile,
   });
@@ -60,14 +64,27 @@ function Matches() {
           {top.map((t) => (
             <div key={t.user_id} className="space-y-2">
               <TrainerCard trainer={t} match={t.match} />
-              {t.match.reasons.length > 0 && (
-                <div className="rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
-                  <div className="mb-1 font-semibold uppercase tracking-widest text-primary">Why this match</div>
-                  <ul className="space-y-0.5">
-                    {t.match.reasons.map((r) => <li key={r}>• {r}</li>)}
-                  </ul>
+              <div className="rounded-lg border border-border bg-card p-4 text-xs">
+                <div className="mb-3 font-semibold uppercase tracking-widest text-primary flex items-center justify-between">
+                  <span>Match Analysis</span>
+                  <span className="text-[10px] bg-primary/10 px-2 py-0.5 rounded text-primary">{t.match.score}% Score</span>
                 </div>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  {t.match.breakdown.filter(b => b.isMatch).map((b) => (
+                    <div key={b.label} className="flex items-center gap-1.5 bg-surface rounded-full px-3 py-1 border border-border">
+                      <span className="text-primary font-bold">✓</span>
+                      <span className="text-muted-foreground font-medium">{b.text}</span>
+                    </div>
+                  ))}
+                </div>
+                {t.match.reasons.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <ul className="space-y-1 text-muted-foreground italic">
+                      {t.match.reasons.slice(0, 2).map((r) => <li key={r}>• {r}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

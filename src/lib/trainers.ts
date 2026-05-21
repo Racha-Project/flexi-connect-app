@@ -9,7 +9,7 @@ export interface RankedTrainer extends TrainerCardData {
 export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTrainer[]> {
   const { data: trainers, error } = await supabase
     .from("trainer_profiles")
-    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, training_location, is_approved, is_suspended, certifications")
+    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, training_location, is_approved, is_suspended, certifications, created_at, training_style, target_client_level, training_modality, response_rate, retention_rate")
     .eq("is_approved", true)
     .eq("is_suspended", false);
   if (error) throw error;
@@ -46,16 +46,20 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
 
       const match = scoreTrainer(prefs, {
         user_id: t.user_id,
+        created_at: t.created_at,
         specialties: t.specialties,
         specialized_goals: t.specialized_goals,
         experience_years: t.experience_years,
         price_per_session: Number(t.price_per_session ?? 0),
         rating: Number(t.rating ?? 0),
         training_location: t.training_location,
-        availability_slots: Array(slotMap.get(t.user_id) ?? 0).fill({}), // Using count as mock array
+        availability_slots: Array(slotMap.get(t.user_id) ?? 0).fill({}),
         profile_completeness: completeness,
-        retention_rate: 0.85, // Mock value as DB field doesn't exist yet
-        training_style: "flexible", // Mock value
+        retention_rate: Number(t.retention_rate ?? 0.8),
+        response_rate: Number(t.response_rate ?? 0.9),
+        training_style: t.training_style,
+        target_client_level: t.target_client_level,
+        training_modality: t.training_modality,
         profile: {
           gender: p?.gender ?? null,
           latitude: p?.latitude ?? null,

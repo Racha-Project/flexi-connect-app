@@ -57,8 +57,13 @@ function Profile() {
         budget_max: form.budget_max ? Number(form.budget_max) : null,
         preferred_trainer_gender: (form.preferred_trainer_gender as "male" | "female" | "other") || null,
         preferred_experience: (form.preferred_experience as "any") || "any",
+        experience_level: (form.experience_level as string) || "beginner",
         latitude: form.latitude ? Number(form.latitude) : null,
         longitude: form.longitude ? Number(form.longitude) : null,
+        health_conditions: (form.health_conditions as string) || null,
+        training_modality: (form.training_modality as string) || "gym",
+        sessions_per_week: form.sessions_per_week ? Number(form.sessions_per_week) : 3,
+        preferred_style: (form.preferred_style as string) || null,
       })
       .eq("id", user!.id);
     setSaving(false);
@@ -143,6 +148,45 @@ function Profile() {
             </select>
           </Field>
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Your experience level">
+            <select value={(form.experience_level as string) ?? "beginner"} onChange={(e) => update("experience_level", e.target.value)} className={inputCls}>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </Field>
+          <Field label="Training Modality">
+            <select value={(form.training_modality as string) ?? "gym"} onChange={(e) => update("training_modality", e.target.value)} className={inputCls}>
+              <option value="gym">Gym</option>
+              <option value="home">Home</option>
+              <option value="online">Online</option>
+            </select>
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Sessions per Week">
+            <input type="number" min="1" max="7" value={(form.sessions_per_week as number) ?? 3} onChange={(e) => update("sessions_per_week", e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="Preferred Training Style">
+            <select value={(form.preferred_style as string) ?? ""} onChange={(e) => update("preferred_style", e.target.value)} className={inputCls}>
+              <option value="">No preference</option>
+              <option value="strict">Strict</option>
+              <option value="supportive">Supportive</option>
+              <option value="analytical">Analytical</option>
+              <option value="flexible">Flexible</option>
+            </select>
+          </Field>
+        </div>
+
+        <div className="grid gap-4">
+          <Field label="Health Conditions">
+            <input placeholder="Any injuries or medical notes?" value={(form.health_conditions as string) ?? ""} onChange={(e) => update("health_conditions", e.target.value)} className={inputCls} />
+          </Field>
+        </div>
+
         <Field label="Location">
           <div className="flex flex-wrap gap-2">
             <input placeholder="Latitude" value={(form.latitude as number) ?? ""} onChange={(e) => update("latitude", e.target.value)} className={`${inputCls} flex-1`} />

@@ -6,14 +6,17 @@ export interface ClientPrefs {
   budget_max?: number | null;
   preferred_trainer_gender?: string | null;
   preferred_experience?: string | null;
+  experience_level?: string | null; // User's own level
   latitude?: number | null;
   longitude?: number | null;
-  training_style_pref?: string | null; // strict, supportive, analytical, flexible
+  training_style_pref?: string | null;
   sessions_per_week_pref?: number | null;
+  training_modality_pref?: string | null; // gym, home, online
 }
 
 export interface TrainerLike {
   user_id: string;
+  created_at: string; // For Cold Start check
   specialties?: string[] | null;
   specialized_goals?: string[] | null;
   experience_years?: number | null;
@@ -21,9 +24,12 @@ export interface TrainerLike {
   rating?: number | null;
   training_location?: string | null;
   availability_slots?: { start_time: string; end_time: string; date: string }[] | null;
-  retention_rate?: number | null; // 0.0 to 1.0
-  training_style?: string | null; // strict, supportive, analytical, flexible
-  profile_completeness?: number | null; // 0.0 to 1.0
+  retention_rate?: number | null;
+  response_rate?: number | null;
+  training_style?: string | null;
+  profile_completeness?: number | null;
+  target_client_level?: string[] | null;
+  training_modality?: string[] | null;
   profile: {
     gender?: string | null;
     latitude?: number | null;
@@ -31,11 +37,20 @@ export interface TrainerLike {
   };
 }
 
+export interface MatchBreakdown {
+  label: string;
+  score: number;
+  maxScore: number;
+  isMatch: boolean;
+  text: string;
+}
+
 export interface MatchResult {
   score: number;
   distanceKm: number | null;
   reasons: string[];
   badges: string[];
+  breakdown: MatchBreakdown[];
 }
 
 export function haversineKm(
@@ -96,10 +111,17 @@ export function scoreTrainer(
   trainer: TrainerLike,
 ): MatchResult | null {
   const reasons: string[] = [];
+  const breakdown: MatchBreakdown[] = [];
   let total = 0;
 
   const price = trainer.price_per_session ?? 0;
   const isOnline = trainer.training_location?.toLowerCase().includes("online");
+
+  // Cold Start Detection (New trainer for first 30 days)
+  const createdAt = new Date(trainer.created_at);
+  const now = new Date();
+  const daysSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+  const isColdStart = daysSinceCreated <= 30;
 
   // --- HARD FILTERS ---
   if (client.budget_max != null && price > client.budget_max) return null;
@@ -125,11 +147,11 @@ export function scoreTrainer(
   const specs = (trainer.specialties ?? []).map((s) => s.toLowerCase());
   const specializedGoals = (trainer.specialized_goals ?? []).map(g => g.toLowerCase());
   
+  let goalScoreValue = 0.5;
   if (goal) {
     const matrix = goalSpecialtyMatrix[goal] ?? {};
-    let goalScore = 0;
     if (specializedGoals.includes(goal.toLowerCase())) {
-      goalScore = 1.0;
+      goalScoreValue = 1.0;
       reasons.push(`Expert in ${goal.replace("_", " ")}`);
     } else {
       let bestSpecWeight = 0;
@@ -138,99 +160,156 @@ export function scoreTrainer(
           bestSpecWeight = Math.max(bestSpecWeight, weight);
         }
       }
-      goalScore = bestSpecWeight;
-      if (goalScore > 0) reasons.push(`Specialty match for your goal`);
+      goalScoreValue = bestSpecWeight;
+      if (goalScoreValue > 0) reasons.push(`Specialty match for your goal`);
     }
-    total += goalScore * 25;
-  } else {
-    total += 15;
   }
+  const goalScoreFinal = goalScoreValue * 25;
+  total += goalScoreFinal;
+  breakdown.push({
+    label: "Goal",
+    score: goalScoreFinal,
+    maxScore: 25,
+    isMatch: goalScoreValue >= 0.7,
+    text: goalScoreValue >= 0.7 ? "Goal ตรง ✓" : "Goal partial match",
+  });
 
   // 2. Schedule Overlap Score (20%)
   const sessionsNeeded = client.sessions_per_week_pref ?? 3;
   const availableSlotsCount = trainer.availability_slots?.length ?? 0;
-  // Simplification: use slot count relative to needs (ideally would check actual time overlap)
-  const overlapScore = Math.min(1, availableSlotsCount / sessionsNeeded);
-  if (overlapScore >= 0.8) reasons.push("Great schedule availability");
-  total += overlapScore * 20;
+  const overlapRatio = Math.min(1, availableSlotsCount / sessionsNeeded);
+  const scheduleScoreFinal = overlapRatio * 20;
+  total += scheduleScoreFinal;
+  if (overlapRatio >= 0.8) reasons.push("Great schedule availability");
+  breakdown.push({
+    label: "Schedule",
+    score: scheduleScoreFinal,
+    maxScore: 20,
+    isMatch: overlapRatio >= 0.8,
+    text: `ว่างตรงกัน ${availableSlotsCount}/${sessionsNeeded} วัน ✓`,
+  });
 
   // 3. Trainer Quality Score (15%)
-  // Quality = rating (60%) + retention (30%) + completeness (10%)
+  // Quality = rating (60%) + retention/response (30%) + completeness (10%)
   const rating = trainer.rating ?? 0;
-  const ratingScore = rating / 5; // 0-1
-  const retentionScore = trainer.retention_rate ?? 0.7; // Default 0.7 if missing
-  const completenessScore = trainer.profile_completeness ?? 0.8; // Default 0.8 if missing
+  let ratingScore = rating / 5;
+  let performanceScore = ((trainer.retention_rate ?? 0.8) + (trainer.response_rate ?? 0.9)) / 2;
   
-  const qualityScore = (ratingScore * 0.6) + (retentionScore * 0.3) + (completenessScore * 0.1);
-  if (qualityScore >= 0.8) reasons.push("High-quality professional");
-  total += qualityScore * 15;
+  // Apply Cold Start quality boost (0.7 default score for 30 days)
+  if (isColdStart && rating === 0) {
+    ratingScore = 0.7; 
+    performanceScore = 0.7;
+  }
+  
+  const completenessScore = trainer.profile_completeness ?? 0.8;
+  const qualityScoreValue = (ratingScore * 0.6) + (performanceScore * 0.3) + (completenessScore * 0.1);
+  const qualityScoreFinal = qualityScoreValue * 15;
+  total += qualityScoreFinal;
+  if (qualityScoreValue >= 0.8) reasons.push("High-quality professional");
+  breakdown.push({
+    label: "Quality",
+    score: qualityScoreFinal,
+    maxScore: 15,
+    isMatch: qualityScoreValue >= 0.7,
+    text: isColdStart && rating === 0 ? "New rising star ★" : `Rated ${rating} stars ✓`,
+  });
 
-  // 4. Experience Level Fit (15%)
+  // 4. Experience & Level Fit (15%)
   const expYears = trainer.experience_years ?? 0;
-  const prefExp = client.preferred_experience;
-  let expScore = 0.5;
-  if (!prefExp || prefExp === "any") expScore = 0.7;
-  else if (prefExp === "beginner") {
-    if (expYears >= 2 && expYears <= 8) expScore = 1.0;
-    else if (expYears > 8) expScore = 0.8;
-  } else if (prefExp === "intermediate") {
-    if (expYears >= 5) expScore = 1.0;
-  } else if (prefExp === "advanced") {
-    if (expYears >= 10) expScore = 1.0;
-    else if (expYears >= 5) expScore = 0.7;
-  }
-  if (expScore >= 0.9) reasons.push("Experience level matches your needs");
-  total += expScore * 15;
-
-  // 5. Distance / Location (10%)
-  let distScore = 0;
-  if (distanceKm != null) {
-    if (distanceKm <= 5) distScore = 1.0;
-    else if (distanceKm <= 15) distScore = 0.8;
-    else if (distanceKm <= 30) distScore = 0.5;
-    else distScore = 0.2;
-    if (distScore >= 0.8) reasons.push(`Close to you (${distanceKm.toFixed(1)} km)`);
-  } else if (isOnline) {
-    distScore = 0.8;
-    reasons.push("Available online");
+  const userLevel = client.experience_level;
+  const targetLevels = (trainer.target_client_level ?? []).map(l => l.toLowerCase());
+  
+  let expScoreValue = 0.5;
+  if (userLevel && targetLevels.includes(userLevel.toLowerCase())) {
+    expScoreValue = 1.0;
+  } else if (userLevel) {
+    // Fallback logic based on years
+    if (userLevel === "beginner" && expYears >= 2) expScoreValue = 0.8;
+    else if (userLevel === "intermediate" && expYears >= 5) expScoreValue = 0.8;
+    else if (userLevel === "advanced" && expYears >= 8) expScoreValue = 0.8;
   } else {
-    distScore = 0.5;
+    expScoreValue = 0.7;
   }
-  total += distScore * 10;
+  const expScoreFinal = expScoreValue * 15;
+  total += expScoreFinal;
+  breakdown.push({
+    label: "Experience",
+    score: expScoreFinal,
+    maxScore: 15,
+    isMatch: expScoreValue >= 0.8,
+    text: expScoreValue >= 0.8 ? "Level fit ✓" : "Experience partial fit",
+  });
+
+  // 5. Distance / Location & Modality (10%)
+  const clientModality = client.training_modality_pref;
+  const trainerModalities = (trainer.training_modality ?? []).map(m => m.toLowerCase());
+  
+  let distScoreValue = 0.5;
+  let modalityMatch = false;
+  
+  if (clientModality && trainerModalities.includes(clientModality.toLowerCase())) {
+    modalityMatch = true;
+    distScoreValue = 0.8;
+  }
+
+  if (distanceKm != null) {
+    if (distanceKm <= 5) distScoreValue = Math.max(distScoreValue, 1.0);
+    else if (distanceKm <= 15) distScoreValue = Math.max(distScoreValue, 0.8);
+    else if (distanceKm <= 30) distScoreValue = Math.max(distScoreValue, 0.5);
+    if (distScoreValue >= 0.8) reasons.push(`Close to you (${distanceKm.toFixed(1)} km)`);
+  } else if (isOnline || (clientModality === "online" && trainerModalities.includes("online"))) {
+    distScoreValue = 1.0;
+    reasons.push("Available online");
+  }
+
+  const distScoreFinal = distScoreValue * 10;
+  total += distScoreFinal;
+  breakdown.push({
+    label: "Location",
+    score: distScoreFinal,
+    maxScore: 10,
+    isMatch: distScoreValue >= 0.8,
+    text: modalityMatch ? "Modality match ✓" : (distanceKm ? `${distanceKm.toFixed(0)}km away` : "Location ok"),
+  });
 
   // 6. Training Style Match (10%)
   const clientStyle = client.training_style_pref;
   const trainerStyle = trainer.training_style;
-  let styleScore = 0.5;
-  if (clientStyle && trainerStyle) {
-    if (clientStyle.toLowerCase() === trainerStyle.toLowerCase()) {
-      styleScore = 1.0;
-      reasons.push(`Matches your ${clientStyle} training style`);
-    }
+  let styleScoreValue = 0.5;
+  if (clientStyle && trainerStyle && clientStyle.toLowerCase() === trainerStyle.toLowerCase()) {
+    styleScoreValue = 1.0;
+    reasons.push(`Matches your ${clientStyle} training style`);
   } else if (!clientStyle) {
-    styleScore = 0.7;
+    styleScoreValue = 0.7;
   }
-  total += styleScore * 10;
+  const styleScoreFinal = styleScoreValue * 10;
+  total += styleScoreFinal;
+  breakdown.push({
+    label: "Style",
+    score: styleScoreFinal,
+    maxScore: 10,
+    isMatch: styleScoreValue >= 1.0,
+    text: styleScoreValue >= 1.0 ? "Style ตรง ✓" : "Standard style",
+  });
 
-  // 7. Gender Preference (5%)
-  let genderScore = 0.6;
-  if (client.preferred_trainer_gender) {
-    if (trainer.profile.gender === client.preferred_trainer_gender) {
-      genderScore = 1.0;
-      reasons.push("Matches gender preference");
-    } else {
-      genderScore = 0.2;
-    }
-  }
-  total += genderScore * 5;
+  // Add Budget breakdown (implied by scoreTrainer not returning null)
+  breakdown.push({
+    label: "Budget",
+    score: 5,
+    maxScore: 5,
+    isMatch: true,
+    text: "Budget fit ✓",
+  });
+  total += 5;
 
   const score = Math.min(100, Math.round(total));
   const badges: string[] = [];
   if (score >= 90) badges.push("Perfect Match");
   else if (score >= 80) badges.push("Best Match");
+  if (isColdStart) badges.push("New Trainer");
   if (distanceKm != null && distanceKm <= 3) badges.push("Closest");
   if (isOnline) badges.push("Online");
   if (expYears >= 10) badges.push("Veteran Coach");
 
-  return { score, distanceKm, reasons, badges };
+  return { score, distanceKm, reasons, badges, breakdown };
 }

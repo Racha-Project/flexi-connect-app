@@ -61,6 +61,9 @@ function P() {
         price_per_session: Number(form.price_per_session || 0),
         training_location: (form.training_location as string) || null,
         gym_name: (form.gym_name as string) || null,
+        training_style: (form.training_style as string) || "flexible",
+        target_client_level: (form.target_client_level as string[]) || [],
+        training_modality: (form.training_modality as string[]) || [],
       }).eq("user_id", user!.id),
     ]);
     setSaving(false);
@@ -123,6 +126,55 @@ function P() {
           <F label="Gym name"><input value={(form.gym_name as string) ?? ""} onChange={(e) => setForm({ ...form, gym_name: e.target.value })} className={cls} /></F>
           <F label="Training location"><input value={(form.training_location as string) ?? ""} onChange={(e) => setForm({ ...form, training_location: e.target.value })} className={cls} /></F>
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <F label="Training Style">
+            <select value={(form.training_style as string) ?? "flexible"} onChange={(e) => setForm({ ...form, training_style: e.target.value })} className={cls}>
+              <option value="strict">Strict</option>
+              <option value="supportive">Supportive</option>
+              <option value="analytical">Analytical</option>
+              <option value="flexible">Flexible</option>
+            </select>
+          </F>
+          <F label="Target Client Level">
+            <div className="flex flex-wrap gap-3 mt-2">
+              {["beginner", "intermediate", "advanced"].map((level) => (
+                <div key={level} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`level-${level}`}
+                    checked={((form.target_client_level as string[]) ?? []).includes(level)}
+                    onCheckedChange={(checked) => {
+                      const current = (form.target_client_level as string[]) ?? [];
+                      const next = checked ? [...current, level] : current.filter((v) => v !== level);
+                      setForm({ ...form, target_client_level: next });
+                    }}
+                  />
+                  <label htmlFor={`level-${level}`} className="text-sm font-medium capitalize cursor-pointer">{level}</label>
+                </div>
+              ))}
+            </div>
+          </F>
+        </div>
+
+        <F label="Training Modality">
+          <div className="flex flex-wrap gap-4 mt-2">
+            {["gym", "home", "online"].map((mod) => (
+              <div key={mod} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`mod-${mod}`}
+                  checked={((form.training_modality as string[]) ?? []).includes(mod)}
+                  onCheckedChange={(checked) => {
+                    const current = (form.training_modality as string[]) ?? [];
+                    const next = checked ? [...current, mod] : current.filter((v) => v !== mod);
+                    setForm({ ...form, training_modality: next });
+                  }}
+                />
+                <label htmlFor={`mod-${mod}`} className="text-sm font-medium capitalize cursor-pointer">{mod}</label>
+              </div>
+            ))}
+          </div>
+        </F>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <F label="Latitude"><input value={(form.latitude as number) ?? ""} onChange={(e) => setForm({ ...form, latitude: e.target.value })} className={cls} /></F>
           <F label="Longitude"><input value={(form.longitude as number) ?? ""} onChange={(e) => setForm({ ...form, longitude: e.target.value })} className={cls} /></F>

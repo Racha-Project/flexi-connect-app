@@ -153,18 +153,23 @@ export type Database = {
           budget_min: number | null
           created_at: string
           email: string | null
+          experience_level: string | null
           fitness_goal: Database["public"]["Enums"]["fitness_goal"] | null
           full_name: string | null
           gender: Database["public"]["Enums"]["gender_type"] | null
+          health_conditions: string | null
           id: string
           latitude: number | null
           longitude: number | null
           preferred_experience:
             | Database["public"]["Enums"]["experience_pref"]
             | null
+          preferred_style: string | null
           preferred_trainer_gender:
             | Database["public"]["Enums"]["gender_type"]
             | null
+          sessions_per_week: number | null
+          training_modality: string | null
           updated_at: string
         }
         Insert: {
@@ -174,18 +179,23 @@ export type Database = {
           budget_min?: number | null
           created_at?: string
           email?: string | null
+          experience_level?: string | null
           fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
           full_name?: string | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          health_conditions?: string | null
           id: string
           latitude?: number | null
           longitude?: number | null
           preferred_experience?:
             | Database["public"]["Enums"]["experience_pref"]
             | null
+          preferred_style?: string | null
           preferred_trainer_gender?:
             | Database["public"]["Enums"]["gender_type"]
             | null
+          sessions_per_week?: number | null
+          training_modality?: string | null
           updated_at?: string
         }
         Update: {
@@ -195,18 +205,23 @@ export type Database = {
           budget_min?: number | null
           created_at?: string
           email?: string | null
+          experience_level?: string | null
           fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
           full_name?: string | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          health_conditions?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           preferred_experience?:
             | Database["public"]["Enums"]["experience_pref"]
             | null
+          preferred_style?: string | null
           preferred_trainer_gender?:
             | Database["public"]["Enums"]["gender_type"]
             | null
+          sessions_per_week?: number | null
+          training_modality?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -278,8 +293,13 @@ export type Database = {
           price_per_session: number | null
           rating: number | null
           rating_count: number | null
+          response_rate: number | null
+          retention_rate: number | null
           specialties: string[] | null
+          target_client_level: string[] | null
           training_location: string | null
+          training_modality: string[] | null
+          training_style: string | null
           updated_at: string
           user_id: string
         }
@@ -295,8 +315,13 @@ export type Database = {
           price_per_session?: number | null
           rating?: number | null
           rating_count?: number | null
+          response_rate?: number | null
+          retention_rate?: number | null
           specialties?: string[] | null
+          target_client_level?: string[] | null
           training_location?: string | null
+          training_modality?: string[] | null
+          training_style?: string | null
           updated_at?: string
           user_id: string
         }
@@ -312,8 +337,13 @@ export type Database = {
           price_per_session?: number | null
           rating?: number | null
           rating_count?: number | null
+          response_rate?: number | null
+          retention_rate?: number | null
           specialties?: string[] | null
+          target_client_level?: string[] | null
           training_location?: string | null
+          training_modality?: string[] | null
+          training_style?: string | null
           updated_at?: string
           user_id?: string
         }
