@@ -15,19 +15,15 @@ export function AvatarUpload({ url, onUpload, userId }: AvatarUploadProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (url) downloadImage(url);
-  }, [url]);
-
-  async function downloadImage(path: string) {
-    try {
-      const { data, error } = await supabase.storage.from("avatars").download(path);
-      if (error) throw error;
-      const url = URL.createObjectURL(data);
-      setAvatarUrl(url);
-    } catch (error: any) {
-      console.error("Error downloading image: ", error.message);
+    if (url) {
+      if (url.startsWith("http")) {
+        setAvatarUrl(url);
+      } else {
+        const { data } = supabase.storage.from("avatars").getPublicUrl(url);
+        setAvatarUrl(data.publicUrl);
+      }
     }
-  }
+  }, [url]);
 
   async function uploadAvatar(event: any) {
     try {
@@ -44,7 +40,10 @@ export function AvatarUpload({ url, onUpload, userId }: AvatarUploadProps) {
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 

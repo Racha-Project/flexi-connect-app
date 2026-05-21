@@ -36,8 +36,12 @@ function ClientDashboard() {
         budget_max: profile?.budget_max,
         preferred_trainer_gender: profile?.preferred_trainer_gender,
         preferred_experience: profile?.preferred_experience,
+        experience_level: profile?.experience_level,
         latitude: profile?.latitude,
         longitude: profile?.longitude,
+        training_style_pref: profile?.preferred_style,
+        sessions_per_week_pref: profile?.sessions_per_week,
+        training_modality_pref: profile?.training_modality,
       }),
     enabled: !!profile,
   });
