@@ -107,7 +107,9 @@ export function TrainerCard({
             <div className="flex items-center gap-1 text-sm">
               <Star className="h-3.5 w-3.5 fill-primary text-primary" />
               <span className="font-semibold">
-                {trainer.rating?.toFixed(1) ?? "—"}
+                {trainer.rating === 0 && match?.badges.includes("New Trainer") 
+                  ? "3.5" 
+                  : (trainer.rating && trainer.rating > 0 ? trainer.rating.toFixed(1) : "0.0")}
               </span>
             </div>
           </div>

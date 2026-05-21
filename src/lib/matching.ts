@@ -211,7 +211,7 @@ export function scoreTrainer(
     score: qualityScoreFinal,
     maxScore: 15,
     isMatch: qualityScoreValue >= 0.7,
-    text: isColdStart && rating === 0 ? "New rising star ★" : `Rated ${rating} stars ✓`,
+    text: isColdStart && rating === 0 ? "New rising star (3.5★)" : `Rated ${rating} stars ✓`,
   });
 
   // 4. Experience & Level Fit (15%)
