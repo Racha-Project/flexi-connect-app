@@ -2,14 +2,15 @@ import { Link } from "@tanstack/react-router";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { Github, Twitter, Linkedin, Dribbble, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-export function SiteFooter() {
+export function SiteFooter({ className = "" }: { className?: string }) {
   const { data: settings } = useSiteSettings();
   const social = (settings?.social_links ?? {}) as Record<string, string>;
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative mt-32 border-t border-border/60 px-6 py-16 overflow-hidden">
+    <footer className={cn("relative mt-32 border-t border-border/60 px-6 py-16 overflow-hidden", className)}>
       <div className="absolute right-0 top-0 -mr-20 -mt-20 opacity-5 pointer-events-none">
         <Heart size={400} className="text-primary" />
       </div>
