@@ -124,10 +124,12 @@ export function PreviewModal({ isOpen, onClose, data }: PreviewModalProps) {
 
                 <div className="mt-12 pt-12 border-t border-border/20 flex flex-wrap items-center gap-4">
                   <Link
-                    to={fullPath}
+                    to={data.type === "project" ? "/portfolio/$slug" : "/blog/$slug"}
+                    params={{ slug: data.slug }}
+                    onClick={onClose}
                     className="group inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-black uppercase tracking-widest text-background shadow-glow transition-all hover:scale-105 active:scale-95"
                   >
-                    Full Case Study <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                    {data.type === "project" ? "Full Case Study" : "Read Full Article"} <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
                   </Link>
                   <button
                     onClick={onClose}
