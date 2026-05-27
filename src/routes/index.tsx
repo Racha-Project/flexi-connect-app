@@ -41,7 +41,7 @@ function HomePage() {
   return (
     <PublicLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-hero noise px-6 pb-24 pt-20 playful-decor">
+      <section className="relative overflow-hidden bg-hero noise px-6 pb-20 pt-12 playful-decor rounded-[3rem] border border-border/40 shadow-glow-sm">
         {/* Playful Floating SVG Decorations */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <svg className="absolute top-[10%] left-[5%] text-primary/10 animate-float" width="120" height="120" viewBox="0 0 100 100">
@@ -261,14 +261,19 @@ function HomePage() {
 
 function SectionHeading({ eyebrow, title, link }: { eyebrow: string; title: string; link?: string }) {
   return (
-    <div className="flex items-end justify-between gap-4">
+    <div className="flex items-end justify-between gap-4 mb-10">
       <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">{eyebrow}</div>
-        <h2 className="font-display mt-2 text-balance text-3xl font-bold tracking-tight md:text-5xl">{title}</h2>
+        <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary mb-2 flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+          {eyebrow}
+        </div>
+        <h2 className="font-display text-balance text-4xl font-black tracking-tight md:text-6xl italic">
+          {title}<span className="text-primary not-italic">.</span>
+        </h2>
       </div>
       {link && (
-        <Link to={link} className="hidden items-center gap-1 text-sm text-muted-foreground hover:text-primary md:inline-flex">
-          View all <ArrowUpRight className="h-3.5 w-3.5" />
+        <Link to={link} className="hidden items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all md:inline-flex group">
+          View all <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
         </Link>
       )}
     </div>
