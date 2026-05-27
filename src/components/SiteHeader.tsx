@@ -50,63 +50,61 @@ export function SiteHeader() {
     <>
       {/* Desktop Sidebar Exact Match */}
       <div className="hidden lg:block">
-        <aside className="fixed left-6 top-6 bottom-6 z-50 flex w-[200px] flex-col overflow-hidden rounded-[2.5rem] border border-border/40 bg-background/40 backdrop-blur-xl shadow-2xl p-6">
-          <div className="flex flex-col items-start gap-1 mb-8">
+        <aside className="fixed left-6 top-6 bottom-6 z-50 flex w-[180px] flex-col overflow-hidden rounded-[2.5rem] border border-border/40 bg-background/40 backdrop-blur-xl shadow-2xl p-5">
+          <div className="flex flex-col items-start gap-1 mb-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black">L</div>
+              <div className="h-9 w-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black text-sm">L</div>
               <div className="flex flex-col">
-                <span className="text-xs font-black uppercase tracking-widest">Lacha Studio</span>
-                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Worldwide</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Lacha Studio</span>
+                <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-tighter">Worldwide</span>
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-primary">
+            <div className="mt-4 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[7px] font-black uppercase tracking-widest text-primary">
               <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
               1 Slot ✦ Q1 '26
             </div>
           </div>
           
-          <nav className="flex flex-col gap-1 flex-1 overflow-y-auto pr-2 scrollbar-hide">
+          <nav className="flex flex-col gap-0.5 flex-1 overflow-y-auto pr-1 scrollbar-hide">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-300",
+                  "group relative flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-300",
                   pathname === n.to
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
                 )}
               >
-                <span className="text-[10px] font-black opacity-40 group-hover:opacity-100">{n.id}</span>
-                <span className="text-sm font-bold uppercase tracking-widest">{n.label}</span>
+                <span className="text-[9px] font-black opacity-40 group-hover:opacity-100">{n.id}</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">{n.label}</span>
                 {pathname === n.to && (
                   <motion.div
                     layoutId="activeIndicator"
-                    className="absolute -right-1 h-4 w-1 rounded-l-full bg-primary"
+                    className="absolute -right-1 h-3.5 w-1 rounded-l-full bg-primary"
                   />
                 )}
               </Link>
             ))}
           </nav>
 
-          <div className="mt-6 pt-6 border-t border-border/20 flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                {time} · BKK <Globe size={10} />
+          <div className="mt-4 pt-4 border-t border-border/20 flex flex-col gap-3">
+            <div className="flex flex-col gap-0.5">
+              <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                {time} · BKK <Globe size={8} />
               </div>
-              <div className="text-[8px] font-bold text-muted-foreground/60 uppercase">Bangkok, Thailand</div>
+              <div className="text-[7px] font-bold text-muted-foreground/60 uppercase">Bangkok, Thailand</div>
             </div>
             
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={toggleTheme}
-                className="glass h-10 w-10 flex items-center justify-center rounded-2xl text-muted-foreground hover:text-primary transition-all"
+                className="glass h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-primary transition-all"
               >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
-              <div className="flex gap-1">
-                <div className="h-10 w-10 rounded-2xl glass flex items-center justify-center text-primary font-bold">✦</div>
-              </div>
+              <div className="h-9 w-9 rounded-xl glass flex items-center justify-center text-primary font-bold text-xs">✦</div>
             </div>
           </div>
         </aside>

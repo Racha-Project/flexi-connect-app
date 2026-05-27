@@ -138,6 +138,14 @@
   font-family: "Geist Sans", sans-serif;
 }
 
+h1 {
+  @apply text-5xl md:text-7xl lg:text-[80px];
+}
+
+h2 {
+  @apply text-3xl md:text-5xl lg:text-6xl;
+}
+
 .italic {
   font-style: italic;
   font-family: serif; /* Giving it a slightly more classic look for the contrast */
