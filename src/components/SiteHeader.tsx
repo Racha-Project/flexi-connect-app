@@ -5,13 +5,13 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 const nav = [
-  { to: "/", label: "Hi", icon: <Home size={20} /> },
-  { to: "/portfolio", label: "Work", icon: <Briefcase size={20} /> },
-  { to: "/blog", label: "Blog", icon: <MessageSquare size={20} /> },
-  { to: "/shop", label: "Shop", icon: <ShoppingBag size={20} /> },
-  { to: "/services", label: "Offer", icon: <Zap size={20} /> },
-  { to: "/about", label: "Me", icon: <User size={20} /> },
-  { to: "/contact", label: "Talk", icon: <MessageSquare size={20} /> },
+  { id: "00", to: "/", label: "Hi", icon: <Home size={18} /> },
+  { id: "01", to: "/portfolio", label: "Work", icon: <Briefcase size={18} /> },
+  { id: "02", to: "/about", label: "About", icon: <User size={18} /> },
+  { id: "03", to: "/services", label: "Services", icon: <Zap size={18} /> },
+  { id: "04", to: "/shop", label: "Shop", icon: <ShoppingBag size={18} /> },
+  { id: "05", to: "/blog", label: "Journal", icon: <MessageSquare size={18} /> },
+  { id: "06", to: "/contact", label: "Hire me", icon: <MessageSquare size={18} /> },
 ];
 
 export function SiteHeader() {
@@ -48,70 +48,67 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Desktop Exact Hunter Layout */}
+      {/* Desktop Sidebar Exact Match */}
       <div className="hidden lg:block">
-        {/* Top Header Bar */}
-        <header className="fixed inset-x-0 top-0 z-[60] flex items-center justify-between px-10 py-6 pointer-events-none">
-          <div className="flex items-center gap-6 pointer-events-auto">
-            <Link to="/" className="font-display text-lg font-bold flex items-center gap-2 group">
-              Lacha <span className="text-muted-foreground/40 font-medium">✦</span> <span className="text-muted-foreground text-sm font-medium tracking-tight group-hover:text-primary transition-colors">Worldwide</span>
-            </Link>
-            <div className="h-4 w-px bg-border/40" />
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-              <Globe size={12} className="text-primary animate-pulse" /> {time} · Bangkok, TH
+        <aside className="fixed left-6 top-6 bottom-6 z-50 flex w-[200px] flex-col overflow-hidden rounded-[2.5rem] border border-border/40 bg-background/40 backdrop-blur-xl shadow-2xl p-6">
+          <div className="flex flex-col items-start gap-1 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black">L</div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-widest">Lacha Studio</span>
+                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Worldwide</span>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-primary">
+              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              1 Slot ✦ Q1 '26
             </div>
           </div>
-
-          <div className="flex items-center gap-4 pointer-events-auto">
-            <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-primary shadow-glow-sm">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              1 Slot ✦ Q1 '26 Open
-            </div>
-            <button
-              onClick={toggleTheme}
-              className="glass h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:text-primary transition-all"
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          </div>
-        </header>
-
-        {/* Left Sidebar Nav */}
-        <aside className="fixed left-0 top-0 z-50 flex h-screen w-20 flex-col items-center justify-center border-r border-border/40 bg-background/20 backdrop-blur-md">
-          <nav className="flex flex-col gap-4">
+          
+          <nav className="flex flex-col gap-1 flex-1 overflow-y-auto pr-2 scrollbar-hide">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 className={cn(
-                  "group relative flex h-12 w-12 flex-col items-center justify-center rounded-2xl transition-all duration-500",
+                  "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-300",
                   pathname === n.to
-                    ? "bg-primary text-primary-foreground shadow-glow"
+                    ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
                 )}
               >
-                <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 400 }}>
-                  {n.icon}
-                </motion.div>
-                
-                {/* Hunter style label below icon */}
-                <span className={cn(
-                  "mt-1 text-[8px] font-black uppercase tracking-tighter opacity-0 transition-opacity group-hover:opacity-100",
-                  pathname === n.to && "opacity-100"
-                )}>
-                  {n.label}
-                </span>
-
-                {/* Vertical active indicator */}
+                <span className="text-[10px] font-black opacity-40 group-hover:opacity-100">{n.id}</span>
+                <span className="text-sm font-bold uppercase tracking-widest">{n.label}</span>
                 {pathname === n.to && (
                   <motion.div
-                    layoutId="activeNav"
-                    className="absolute -left-1 h-8 w-1 rounded-r-full bg-primary"
+                    layoutId="activeIndicator"
+                    className="absolute -right-1 h-4 w-1 rounded-l-full bg-primary"
                   />
                 )}
               </Link>
             ))}
           </nav>
+
+          <div className="mt-6 pt-6 border-t border-border/20 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                {time} · BKK <Globe size={10} />
+              </div>
+              <div className="text-[8px] font-bold text-muted-foreground/60 uppercase">Bangkok, Thailand</div>
+            </div>
+            
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={toggleTheme}
+                className="glass h-10 w-10 flex items-center justify-center rounded-2xl text-muted-foreground hover:text-primary transition-all"
+              >
+                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+              <div className="flex gap-1">
+                <div className="h-10 w-10 rounded-2xl glass flex items-center justify-center text-primary font-bold">✦</div>
+              </div>
+            </div>
+          </div>
         </aside>
       </div>
 

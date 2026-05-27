@@ -43,79 +43,90 @@ function HomePage() {
 
   return (
     <PublicLayout>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-hero noise px-6 pb-20 pt-12 playful-decor rounded-[3rem] border border-border/40 shadow-glow-sm">
-        {/* Playful Floating SVG Decorations */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <svg className="absolute top-[10%] left-[5%] text-primary/10 animate-float" width="120" height="120" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="currentColor" />
-          </svg>
-          <svg className="absolute bottom-[10%] right-[5%] text-secondary/10 animate-float" style={{ animationDelay: "-2s" }} width="150" height="150" viewBox="0 0 100 100">
-            <rect x="20" y="20" width="60" height="60" rx="15" fill="currentColor" />
-          </svg>
-          <svg className="absolute top-[40%] right-[10%] text-accent/10 animate-float" style={{ animationDelay: "-4s" }} width="80" height="80" viewBox="0 0 100 100">
-            <path d="M50 10 L90 90 L10 90 Z" fill="currentColor" />
-          </svg>
-        </div>
+      {/* Hero Refined */}
+      <section className="relative overflow-hidden px-6 pb-20 pt-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-wrap gap-2 mb-8">
+            <div className="rounded-full bg-[#D9F99D] px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#4D7C0F]">Bangkok ✦ Worldwide</div>
+            <div className="rounded-full bg-[#FCE7F3] px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#BE185D]">Solo Dev</div>
+            <div className="rounded-full bg-[#DBEAFE] px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1D4ED8]">Est. 2026</div>
+          </div>
 
-        {/* Floating Icons */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <FloatingElement className="absolute left-[10%] top-[20%] text-primary/20" delay={0.2} duration={5} distance={20}>
-            <Zap size={48} />
-          </FloatingElement>
-          <FloatingElement className="absolute right-[15%] top-[15%] text-primary/20" delay={1} duration={6} distance={25}>
-            <Rocket size={40} />
-          </FloatingElement>
-          <FloatingElement className="absolute left-[15%] bottom-[20%] text-primary/20" delay={0.5} duration={4} distance={15}>
-            <Code size={32} />
-          </FloatingElement>
-          <FloatingElement className="absolute right-[10%] bottom-[25%] text-primary/20" delay={1.5} duration={5.5} distance={22}>
-            <Globe size={44} />
-          </FloatingElement>
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-display text-[64px] md:text-[88px] font-black leading-[0.9] tracking-tighter"
+              >
+                Idea to <span className="italic text-primary">shipped</span> in <span className="relative inline-block px-4 py-1">
+                  <span className="relative z-10">7 days</span>
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="absolute inset-0 bg-accent rounded-[100%] -rotate-2 origin-left z-0"
+                  />
+                </span>, not <span className="relative inline-block border-b-4 border-[#D9F99D]">7 months</span>.
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed font-medium"
+              >
+                Hi, I'm <span className="font-black text-foreground">Lacha</span> — a solo full-stack dev based in Bangkok, working with clients worldwide. <span className="font-bold">Design since 2014, code since 2022, shipping for clients since 2024.</span> I take ideas from <span className="italic">"hmm what if..."</span> to <span className="font-bold text-foreground underline decoration-primary decoration-4">real working apps</span> that actually ship.
+              </motion.p>
 
-        <div className="relative mx-auto max-w-6xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", damping: 12, stiffness: 100 }}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur"
-          >
-            <Sparkles className="h-3 w-3 text-primary animate-pulse" /> Available for new projects · Q3 2026
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.05 }}
-            className="font-display mt-6 text-balance text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl lg:text-[88px]"
-          >
-            {settings?.hero_title ?? "Designing premium digital products that move people."}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="mx-auto mt-6 max-w-2xl text-pretty text-base text-muted-foreground md:text-lg"
-          >
-            {settings?.hero_subtitle ?? "Independent designer & developer building portfolios, products and services."}
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background shadow-glow transition-colors">
-                Hire me <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to="/portfolio" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary">
-                View work
-              </Link>
-            </motion.div>
-          </motion.div>
+              <div className="mt-10 flex flex-wrap items-center gap-4">
+                <Link to="/contact" className="rounded-full bg-foreground px-8 py-4 text-sm font-black uppercase tracking-widest text-background shadow-glow transition-all hover:scale-105 active:scale-95">
+                  Start your project →
+                </Link>
+                <Link to="/portfolio" className="rounded-full border-2 border-border px-8 py-4 text-sm font-black uppercase tracking-widest hover:bg-surface transition-all">
+                  Peek the work
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative">
+              {/* Central Mockup/Image */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", damping: 15 }}
+                className="relative z-10 aspect-[4/5] overflow-hidden rounded-[3rem] border-2 border-border/40 bg-surface shadow-2xl"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" 
+                  alt="Lacha Hero" 
+                  className="h-full w-full object-cover"
+                />
+              </motion.div>
+
+              {/* Floating Badges */}
+              <FloatingElement className="absolute -right-8 top-10 z-20" distance={20} duration={4}>
+                <div className="rounded-full bg-[#FCE7F3] border-2 border-[#BE185D]/20 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-[#BE185D] shadow-lg rotate-12">
+                  ✦ Now Booking
+                </div>
+              </FloatingElement>
+              <FloatingElement className="absolute -left-12 top-1/4 z-20" distance={15} duration={5} delay={0.5}>
+                <div className="rounded-full bg-[#D9F99D] border-2 border-[#4D7C0F]/20 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-[#4D7C0F] shadow-lg -rotate-12">
+                  20+ Shipped
+                </div>
+              </FloatingElement>
+              <FloatingElement className="absolute -left-8 bottom-1/4 z-20" distance={25} duration={6} delay={1}>
+                <div className="rounded-full bg-accent border-2 border-accent-foreground/20 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-accent-foreground shadow-lg rotate-6">
+                  ⚡ MVP in 7d
+                </div>
+              </FloatingElement>
+              <FloatingElement className="absolute -right-12 bottom-10 z-20" distance={20} duration={5.5} delay={1.5}>
+                <div className="rounded-full bg-[#DBEAFE] border-2 border-[#1D4ED8]/20 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-[#1D4ED8] shadow-lg -rotate-6">
+                  5.0 ★ Fiverr
+                </div>
+              </FloatingElement>
+            </div>
+          </div>
         </div>
       </section>
 
