@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, ArrowUpRight } from "lucide-react";
+import { Check, ArrowUpRight, Sparkles, Zap, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { PublicLayout } from "@/components/PublicLayout";
 
@@ -26,36 +27,67 @@ function ServicesPage() {
     <PublicLayout>
       <section className="px-6 pb-12 pt-8">
         <div className="mx-auto max-w-6xl">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Services</div>
-          <h1 className="font-display mt-2 text-balance text-5xl font-bold tracking-tight md:text-7xl">Freelance engagements</h1>
-          <p className="mt-4 max-w-xl text-muted-foreground">Focused packages with clear deliverables and timelines. Custom scopes welcome.</p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-2"
+          >
+            <Sparkles size={14} className="animate-pulse" />
+            What I Offer
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-display mt-2 text-balance text-5xl font-bold tracking-tight md:text-7xl"
+          >
+            Built end-to-end. <span className="text-primary italic">Shipped fast.</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 max-w-xl text-muted-foreground text-lg"
+          >
+            Focused packages with clear deliverables and timelines. Your idea, in real working code, in a week.
+          </motion.p>
 
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
-            {isLoading && Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-96 animate-pulse rounded-3xl bg-surface" />)}
-            {services.map((s) => (
-              <div key={s.id} className="glass-strong flex flex-col rounded-3xl p-6">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">{s.category}</div>
-                <h3 className="font-display mt-2 text-2xl font-semibold">{s.title}</h3>
-                <p className="mt-3 text-sm text-muted-foreground">{s.description}</p>
-
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-3xl font-semibold">${Number(s.price_start).toLocaleString()}</span>
-                  <span className="text-xs text-muted-foreground">starting</span>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {isLoading && Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-96 animate-pulse rounded-[2rem] bg-surface" />)}
+            {services.map((s, i) => (
+              <motion.div
+                key={s.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="glass-strong flex flex-col rounded-[2.5rem] p-8 border border-border/50 hover:border-primary/40 transition-all hover:shadow-glow-sm relative overflow-hidden group"
+              >
+                <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  {i % 3 === 0 ? <Zap size={140} /> : i % 3 === 1 ? <Rocket size={140} /> : <Sparkles size={140} />}
                 </div>
-                <div className="text-xs text-muted-foreground">Delivery: {s.estimated_delivery}</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">{s.category}</div>
+                <h3 className="font-display mt-2 text-3xl font-bold">{s.title}</h3>
+                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{s.description}</p>
 
-                <ul className="mt-5 space-y-2.5 border-t border-border/60 pt-5">
+                <div className="mt-8 flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-primary italic">${Number(s.price_start).toLocaleString()}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">starting</span>
+                </div>
+                <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Delivery: {s.estimated_delivery}</div>
+
+                <ul className="mt-8 space-y-3 border-t border-border/40 pt-8">
                   {s.features?.map((f: string) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 flex-none text-primary" /> {f}
+                    <li key={f} className="flex items-start gap-3 text-sm">
+                      <div className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span className="text-muted-foreground group-hover:text-foreground transition-colors">{f}</span>
                     </li>
                   ))}
                 </ul>
 
-                <a href="#hire" className="mt-6 inline-flex items-center justify-center gap-1.5 rounded-full bg-foreground py-2.5 text-sm font-medium text-background">
-                  Request quote <ArrowUpRight className="h-3.5 w-3.5" />
+                <a href="#hire" className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-foreground py-4 text-sm font-bold text-background transition-all hover:scale-105 active:scale-95 shadow-glow">
+                  Request quote <ArrowUpRight className="h-4 w-4" />
                 </a>
-              </div>
+              </motion.div>
             ))}
           </div>
 

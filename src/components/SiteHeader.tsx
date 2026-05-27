@@ -39,9 +39,15 @@ export function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
       <div className="glass mx-auto flex max-w-6xl items-center justify-between rounded-full px-5 py-2.5">
-        <Link to="/" className="font-display text-xl font-bold">
-          Lacha<span className="text-primary">.</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="font-display text-xl font-bold flex items-center gap-1">
+            Lacha<span className="text-primary">.</span>
+          </Link>
+          <div className="hidden lg:flex items-center gap-2 rounded-full border border-border/50 bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-tighter text-primary">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            Now Booking Q1 '26
+          </div>
+        </div>
         <nav className="hidden items-center gap-1 md:flex">
           {nav.map((n) => (
             <Link
