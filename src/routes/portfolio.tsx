@@ -6,6 +6,7 @@ import { Search, ArrowUpRight, Filter, Rocket, Star, Zap, Heart } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { PublicLayout } from "@/components/PublicLayout";
 import { Marquee } from "@/components/Marquee";
+import { PreviewModal } from "@/components/PreviewModal";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
