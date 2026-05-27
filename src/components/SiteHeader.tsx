@@ -10,7 +10,7 @@ const nav = [
   { id: "02", to: "/about", label: "About", icon: <User size={18} /> },
   { id: "03", to: "/services", label: "Services", icon: <Zap size={18} /> },
   { id: "04", to: "/shop", label: "Shop", icon: <ShoppingBag size={18} /> },
-  { id: "05", to: "/blog", label: "Journal", icon: <MessageSquare size={18} /> },
+  { id: "05", to: "/blog", label: "ฺBlog", icon: <MessageSquare size={18} /> },
   { id: "06", to: "/contact", label: "Hire me", icon: <MessageSquare size={18} /> },
 ];
 

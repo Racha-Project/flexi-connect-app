@@ -9,6 +9,7 @@ import { Marquee } from "@/components/Marquee";
 import { FloatingElement } from "@/components/FloatingElement";
 import { cn } from "@/lib/utils";
 import { PreviewModal } from "@/components/PreviewModal";
+import { ProjectSlider } from "@/components/ProjectSlider";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -90,19 +91,8 @@ function HomePage() {
             </div>
 
             <div className="relative">
-              {/* Central Mockup/Image */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", damping: 15 }}
-                className="relative z-10 aspect-[4/5] overflow-hidden rounded-[3rem] border-2 border-border/40 bg-surface shadow-2xl"
-              >
-                <img 
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" 
-                  alt="Lacha Hero" 
-                  className="h-full w-full object-cover"
-                />
-              </motion.div>
+              {/* Interactive Project Slider */}
+              <ProjectSlider projects={projects.slice(0, 5)} />
 
               {/* Floating Badges */}
               <FloatingElement className="absolute -right-8 top-10 z-20" distance={20} duration={4}>
