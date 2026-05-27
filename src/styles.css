@@ -146,6 +146,13 @@
   animation-direction: reverse;
 }
 
+/* Hide default cursor on desktop for custom experience */
+@media (min-width: 1024px) {
+  a, button, .cursor-pointer {
+    cursor: none !important;
+  }
+}
+
 /* Custom Fonts and Highlights for Hunter Style */
 .font-display {
   font-family: "Geist Sans", sans-serif;
