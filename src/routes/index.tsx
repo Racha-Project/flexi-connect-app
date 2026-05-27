@@ -7,6 +7,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { Marquee } from "@/components/Marquee";
 import { FloatingElement } from "@/components/FloatingElement";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,8 +41,21 @@ function HomePage() {
   return (
     <PublicLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-hero noise px-6 pb-20 pt-16">
-        {/* Playful Floating Elements */}
+      <section className="relative overflow-hidden bg-hero noise px-6 pb-24 pt-20 playful-decor">
+        {/* Playful Floating SVG Decorations */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="absolute top-[10%] left-[5%] text-primary/10 animate-float" width="120" height="120" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="currentColor" />
+          </svg>
+          <svg className="absolute bottom-[10%] right-[5%] text-secondary/10 animate-float" style={{ animationDelay: "-2s" }} width="150" height="150" viewBox="0 0 100 100">
+            <rect x="20" y="20" width="60" height="60" rx="15" fill="currentColor" />
+          </svg>
+          <svg className="absolute top-[40%] right-[10%] text-accent/10 animate-float" style={{ animationDelay: "-4s" }} width="80" height="80" viewBox="0 0 100 100">
+            <path d="M50 10 L90 90 L10 90 Z" fill="currentColor" />
+          </svg>
+        </div>
+
+        {/* Floating Icons */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <FloatingElement className="absolute left-[10%] top-[20%] text-primary/20" delay={0.2} duration={5} distance={20}>
             <Zap size={48} />
@@ -141,41 +155,46 @@ function HomePage() {
           <SectionHeading eyebrow="What I offer" title="Services & products" />
           <div className="mt-10 grid gap-4 md:grid-cols-6">
             <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="glass-strong relative col-span-full overflow-hidden rounded-3xl p-8 md:col-span-3"
+              whileHover={{ scale: 1.02, rotate: -1 }}
+              className="glass-strong relative col-span-full overflow-hidden rounded-3xl p-8 md:col-span-3 border-2 border-primary/20"
             >
-              <div className="absolute right-0 top-0 -mr-4 -mt-4 opacity-10 rotate-12">
+              <div className="absolute right-0 top-0 -mr-4 -mt-4 opacity-20 rotate-12 text-primary animate-float">
                 <Code size={160} />
               </div>
-              <h3 className="font-display text-2xl font-semibold">Freelance services</h3>
-              <p className="mt-2 max-w-md text-sm text-muted-foreground">Brand identity, product design, and bespoke websites — booked as focused engagements.</p>
-              <ul className="mt-6 space-y-3">
+              <h3 className="font-display text-3xl font-black italic">Freelance services</h3>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground font-medium">Brand identity, product design, and bespoke websites — booked as focused engagements.</p>
+              <ul className="mt-8 space-y-4">
                 {services.slice(0, 3).map((s) => (
-                  <li key={s.id} className="flex items-center justify-between border-t border-border/60 pt-3 text-sm">
-                    <span className="font-medium">{s.title}</span>
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">Starting ${Number(s.price_start).toLocaleString()}</span>
+                  <li key={s.id} className="flex items-center justify-between border-b border-border/40 pb-4 text-sm">
+                    <span className="font-bold text-lg">{s.title}</span>
+                    <span className="rounded-full bg-primary text-primary-foreground px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-glow-sm">From ${Number(s.price_start).toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
-              <Link to="/services" className="group mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                Browse services <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <Link to="/services" className="group mt-8 inline-flex items-center gap-2 text-sm font-black text-primary uppercase tracking-widest">
+                Browse services <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
               </Link>
             </motion.div>
             <div className="col-span-full grid gap-4 md:col-span-3 md:grid-cols-1">
               {products.map((p) => (
-                <motion.div key={p.id} whileHover={{ x: 8 }} transition={{ type: "spring", damping: 12 }}>
-                  <Link to="/shop/$slug" params={{ slug: p.slug }} className="glass group relative block overflow-hidden rounded-3xl p-5 transition-colors hover:border-primary/40">
-                    <div className="flex items-center gap-4">
-                      {p.thumbnail && <img src={p.thumbnail} alt={p.title} className="h-16 w-16 rounded-xl object-cover transition-transform group-hover:scale-110" loading="lazy" />}
+                <motion.div key={p.id} whileHover={{ x: 12, scale: 1.02 }} transition={{ type: "spring", damping: 12 }}>
+                  <Link to="/shop/$slug" params={{ slug: p.slug }} className="glass group relative block overflow-hidden rounded-3xl p-6 border-2 border-secondary/20 hover:border-secondary/50">
+                    <div className="flex items-center gap-6">
+                      {p.thumbnail && (
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl">
+                          <img src={p.thumbnail} alt={p.title} className="h-full w-full object-cover transition-transform group-hover:scale-125" loading="lazy" />
+                          <div className="absolute inset-0 bg-secondary/10 group-hover:bg-transparent transition-colors" />
+                        </div>
+                      )}
                       <div className="flex-1">
-                        <div className="text-[10px] uppercase tracking-widest text-primary font-bold">Digital Asset</div>
-                        <div className="font-display font-semibold">{p.title}</div>
+                        <div className="text-[10px] uppercase tracking-widest text-secondary font-black mb-1">Digital Asset</div>
+                        <div className="font-display text-xl font-bold">{p.title}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-primary">${Number(p.price).toFixed(0)}</div>
-                        <div className="mt-1 flex justify-end">
-                          <div className="rounded-full bg-foreground/5 p-1.5 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                            <ArrowUpRight className="h-3.5 w-3.5" />
+                        <div className="font-black text-2xl text-secondary italic">${Number(p.price).toFixed(0)}</div>
+                        <div className="mt-2 flex justify-end">
+                          <div className="rounded-full bg-secondary text-secondary-foreground p-2 transition-all group-hover:rotate-12 group-hover:scale-110 shadow-glow">
+                            <ArrowUpRight className="h-4 w-4" />
                           </div>
                         </div>
                       </div>
@@ -259,39 +278,39 @@ function SectionHeading({ eyebrow, title, link }: { eyebrow: string; title: stri
 function BentoProject({ project, className, big }: { project: any; className?: string; big?: boolean }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.01, y: -4 }}
+      whileHover={{ scale: 1.02, y: -8 }}
       transition={{ type: "spring", damping: 15, stiffness: 300 }}
-      className={className}
+      className={cn("gradient-border", className)}
     >
       <Link
         to="/portfolio/$slug"
         params={{ slug: project.slug }}
-        className={`group relative block h-full w-full overflow-hidden rounded-3xl border border-border shadow-card transition-colors hover:border-primary/50`}
+        className="group relative block h-full w-full overflow-hidden rounded-[calc(var(--radius)-1px)] bg-background/40 backdrop-blur-md transition-all hover:bg-background/20"
       >
         {project.thumbnail && (
           <img
             src={project.thumbnail}
             alt={project.title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100"
             loading="lazy"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
           <div className="flex items-center gap-2">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">{project.category}</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-2 py-0.5 rounded-full">{project.category}</div>
             <div className="h-1 w-1 rounded-full bg-primary/40" />
-            <div className="text-[10px] uppercase tracking-tighter text-primary/80">Shipped</div>
+            <div className="text-[10px] font-bold uppercase tracking-tighter text-secondary">Shipped</div>
           </div>
-          <h3 className={`font-display mt-1 font-semibold ${big ? "text-3xl md:text-5xl" : "text-xl md:text-2xl"}`}>
+          <h3 className={`font-display mt-2 font-black ${big ? "text-3xl md:text-5xl" : "text-xl md:text-2xl"}`}>
             {project.title}
           </h3>
           {big && project.description && (
-            <p className="mt-2 max-w-md text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground line-clamp-2 leading-relaxed">{project.description}</p>
           )}
         </div>
-        <div className="absolute right-5 top-5 rounded-full bg-background/80 p-2 backdrop-blur transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:rotate-12">
-          <ArrowUpRight className="h-4 w-4" />
+        <div className="absolute right-5 top-5 rounded-full bg-white/10 p-3 backdrop-blur-md border border-white/20 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:rotate-12 group-hover:scale-110 shadow-glow">
+          <ArrowUpRight className="h-5 w-5" />
         </div>
       </Link>
     </motion.div>
