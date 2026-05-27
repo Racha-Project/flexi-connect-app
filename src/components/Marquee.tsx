@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface MarqueeProps {
@@ -17,24 +16,19 @@ export function Marquee({
   className = "",
 }: MarqueeProps) {
   return (
-    <div className={`flex overflow-hidden select-none gap-4 ${className}`}>
-      <motion.div
-        animate={{
-          x: reverse ? ["0%", "-50%"] : ["-50%", "0%"],
-        }}
-        transition={{
-          duration: speed,
-          ease: "linear",
-          repeat: Infinity,
-        }}
-        className="flex min-w-full shrink-0 items-center justify-around gap-4"
+    <div className={`group flex overflow-hidden select-none gap-4 ${className}`}>
+      <div
+        className={`flex min-w-full shrink-0 items-center justify-around gap-4 animate-marquee ${
+          reverse ? "direction-reverse" : ""
+        } ${pauseOnHover ? "group-hover:[animation-play-state:paused]" : ""}`}
+        style={{ animationDuration: `${speed}s` }}
       >
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex shrink-0 items-center gap-4">
             {children}
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

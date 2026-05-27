@@ -59,15 +59,15 @@ function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="font-display text-[64px] md:text-[88px] font-black leading-[0.9] tracking-tighter"
               >
-                Idea to <span className="italic text-primary">shipped</span> in <span className="relative inline-block px-4 py-1">
-                  <span className="relative z-10">7 days</span>
+                Turning ideas <span className="italic text-primary">Into AI </span> products <span className="relative inline-block px-4 py-1">
+                  <span className="relative z-10">In days.</span>
                   <motion.div
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
                     className="absolute inset-0 bg-accent rounded-[100%] -rotate-2 origin-left z-0"
                   />
-                </span>, not <span className="relative inline-block border-b-4 border-[#D9F99D]">7 months</span>.
+                </span>, not <span className="relative inline-block border-b-4 border-[#D9F99D]">Months</span>.
               </motion.h1>
               
               <motion.p
@@ -76,7 +76,7 @@ function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed font-medium"
               >
-                Hi, I'm <span className="font-black text-foreground">Lacha</span> — a solo full-stack dev based in Bangkok, working with clients worldwide. <span className="font-bold">Design since 2014, code since 2022, shipping for clients since 2024.</span> I take ideas from <span className="italic">"hmm what if..."</span> to <span className="font-bold text-foreground underline decoration-primary decoration-4">real working apps</span> that actually ship.
+                Hi, I'm <span className="font-black text-foreground">Friend</span> — a solo AI Engineer based in Thailand, helping startups and businesses turn ideas into <span className="font-bold text-foreground underline decoration-primary decoration-4">real AI products and working apps</span>. Most things start with <span className="italic">"why do this manually?"</span>.
               </motion.p>
 
               <div className="mt-10 flex flex-wrap items-center gap-4">
