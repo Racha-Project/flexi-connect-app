@@ -8,6 +8,8 @@ import { useSiteSettings } from "@/hooks/use-site-settings";
 import { Marquee } from "@/components/Marquee";
 import { FloatingElement } from "@/components/FloatingElement";
 import { cn } from "@/lib/utils";
+import { PreviewModal } from "@/components/PreviewModal";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { data: settings } = useSiteSettings();
+  const [previewData, setPreviewData] = useState<any>(null);
   const { data: projects = [] } = useQuery({
     queryKey: ["featured_projects"],
     queryFn: async () => (await supabase.from("portfolio_projects").select("*").eq("featured", true).order("order_position")).data ?? [],
@@ -142,9 +145,9 @@ function HomePage() {
         <div className="mx-auto max-w-6xl">
           <SectionHeading eyebrow="Selected work" title="Featured projects" link="/portfolio" />
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-6 md:grid-rows-2">
-            {projects[0] && <BentoProject project={projects[0]} className="md:col-span-4 md:row-span-2 md:aspect-auto aspect-[16/10]" big />}
-            {projects[1] && <BentoProject project={projects[1]} className="md:col-span-2 aspect-[4/3]" />}
-            {projects[2] && <BentoProject project={projects[2]} className="md:col-span-2 aspect-[4/3]" />}
+            {projects[0] && <BentoProject project={projects[0]} className="md:col-span-4 md:row-span-2 md:aspect-auto aspect-[16/10]" big onPreview={() => setPreviewData({ ...projects[0], type: "project" })} />}
+            {projects[1] && <BentoProject project={projects[1]} className="md:col-span-2 aspect-[4/3]" onPreview={() => setPreviewData({ ...projects[1], type: "project" })} />}
+            {projects[2] && <BentoProject project={projects[2]} className="md:col-span-2 aspect-[4/3]" onPreview={() => setPreviewData({ ...projects[2], type: "project" })} />}
           </div>
         </div>
       </section>
@@ -255,6 +258,12 @@ function HomePage() {
           </Link>
         </div>
       </section>
+
+      <PreviewModal
+        isOpen={!!previewData}
+        onClose={() => setPreviewData(null)}
+        data={previewData}
+      />
     </PublicLayout>
   );
 }
@@ -280,18 +289,15 @@ function SectionHeading({ eyebrow, title, link }: { eyebrow: string; title: stri
   );
 }
 
-function BentoProject({ project, className, big }: { project: any; className?: string; big?: boolean }) {
+function BentoProject({ project, className, big, onPreview }: { project: any; className?: string; big?: boolean; onPreview: () => void }) {
   return (
     <motion.div
       whileHover={{ scale: 1.02, y: -8 }}
       transition={{ type: "spring", damping: 15, stiffness: 300 }}
       className={cn("gradient-border", className)}
+      onClick={onPreview}
     >
-      <Link
-        to="/portfolio/$slug"
-        params={{ slug: project.slug }}
-        className="group relative block h-full w-full overflow-hidden rounded-[calc(var(--radius)-1px)] bg-background/40 backdrop-blur-md transition-all hover:bg-background/20"
-      >
+      <div className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-[calc(var(--radius)-1px)] bg-background/40 backdrop-blur-md transition-all hover:bg-background/20">
         {project.thumbnail && (
           <img
             src={project.thumbnail}
@@ -317,7 +323,7 @@ function BentoProject({ project, className, big }: { project: any; className?: s
         <div className="absolute right-5 top-5 rounded-full bg-white/10 p-3 backdrop-blur-md border border-white/20 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:rotate-12 group-hover:scale-110 shadow-glow">
           <ArrowUpRight className="h-5 w-5" />
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }

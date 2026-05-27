@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const nav = [
   { to: "/", label: "Hi", icon: <Home size={20} /> },
   { to: "/portfolio", label: "Work", icon: <Briefcase size={20} /> },
+  { to: "/blog", label: "Blog", icon: <MessageSquare size={20} /> },
   { to: "/shop", label: "Shop", icon: <ShoppingBag size={20} /> },
   { to: "/services", label: "Offer", icon: <Zap size={20} /> },
   { to: "/about", label: "Me", icon: <User size={20} /> },

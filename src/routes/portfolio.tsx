@@ -20,6 +20,7 @@ export const Route = createFileRoute("/portfolio")({
 function PortfolioPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
+  const [previewData, setPreviewData] = useState<any>(null);
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects_all"],
@@ -109,12 +110,9 @@ function PortfolioPage() {
                     delay: i * 0.05
                   }}
                   whileHover={{ y: -8 }}
+                  onClick={() => setPreviewData({ ...p, type: "project" })}
                 >
-                  <Link
-                    to="/portfolio/$slug"
-                    params={{ slug: p.slug }}
-                    className="group relative block aspect-[4/5] overflow-hidden rounded-[2.5rem] border border-border bg-surface shadow-card transition-all hover:border-primary/50 hover:shadow-glow-sm"
-                  >
+                  <div className="group relative block aspect-[4/5] cursor-pointer overflow-hidden rounded-[2.5rem] border border-border bg-surface shadow-card transition-all hover:border-primary/50 hover:shadow-glow-sm">
                     {p.thumbnail && (
                       <img
                         src={p.thumbnail}
@@ -139,7 +137,7 @@ function PortfolioPage() {
                     <div className="absolute right-6 top-6 rounded-full bg-white/10 p-3 backdrop-blur-md border border-white/20 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 group-hover:rotate-12">
                       <ArrowUpRight className="h-5 w-5" />
                     </div>
-                  </Link>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -181,6 +179,12 @@ function PortfolioPage() {
           </div>
         </Marquee>
       </div>
+
+      <PreviewModal
+        isOpen={!!previewData}
+        onClose={() => setPreviewData(null)}
+        data={previewData}
+      />
     </PublicLayout>
   );
 }
