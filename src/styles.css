@@ -148,6 +148,7 @@
   filter: blur(10px);
 }
 
+.light {
   --border: oklch(0.15 0.04 280 / 0.10);
   --input: oklch(0.15 0.04 280 / 0.08);
   --ring: oklch(0.45 0.22 275);
