@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, Outlet, useRouterState, Navigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
+  notFoundComponent: () => <Navigate to="/admin/" replace />,
 });
 
 const items = [
@@ -24,7 +25,7 @@ function AdminLayout() {
   const { session, isAdmin, loading } = useAuth();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const isLoginPage = path === "/admin/login";
+  const isLoginPage = path === "/admin/login" || path === "/admin/login/";
 
   useEffect(() => {
     if (!loading && !session && !isLoginPage) {
@@ -41,6 +42,11 @@ function AdminLayout() {
         </div>
       </div>
     );
+  }
+
+  // Handle trailing slash for /admin
+  if (path === "/admin") {
+    return <Navigate to="/admin/" replace />;
   }
 
   // If we are on the login page, just render the outlet (the login form)
@@ -83,7 +89,9 @@ function AdminLayout() {
         <Link to="/" className="font-display px-2 py-3 text-lg font-bold">Lacha<span className="text-primary">.</span></Link>
         <nav className="mt-4 flex-1 space-y-0.5">
           {items.map((it) => {
-            const active = it.exact ? path === it.to : path.startsWith(it.to);
+            const active = it.exact 
+              ? (path === it.to || path === `${it.to}/`) 
+              : path.startsWith(it.to);
             return (
               <Link key={it.to} to={it.to} className={cn("flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors", active ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50")}>
                 <it.icon className="h-4 w-4" /> {it.label}

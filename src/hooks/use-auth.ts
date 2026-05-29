@@ -43,5 +43,10 @@ export function useAuth() {
     },
   });
 
-  return { session, user: session?.user ?? null, isAdmin: !!isAdminQuery.data, loading };
+  return { 
+    session, 
+    user: session?.user ?? null, 
+    isAdmin: !!isAdminQuery.data, 
+    loading: loading || (!!session && isAdminQuery.isLoading) 
+  };
 }
