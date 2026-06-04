@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, ShieldCheck, Calendar, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  component: () => <RoleGuard role="admin"><A /></RoleGuard>,
+  component: A,
 });
 
 function A() {

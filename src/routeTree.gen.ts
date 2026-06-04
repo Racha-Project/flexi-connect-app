@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TrainerProfileRouteImport } from './routes/trainer.profile'
 import { Route as TrainerEarningsRouteImport } from './routes/trainer.earnings'
 import { Route as TrainerDashboardRouteImport } from './routes/trainer.dashboard'
@@ -49,6 +51,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -58,6 +65,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const TrainerProfileRoute = TrainerProfileRouteImport.update({
   id: '/trainer/profile',
@@ -120,34 +132,34 @@ const ClientBookingsRoute = ClientBookingsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => rootRouteImport,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminTrainersRoute = AdminTrainersRouteImport.update({
-  id: '/admin/trainers',
-  path: '/admin/trainers',
-  getParentRoute: () => rootRouteImport,
+  id: '/trainers',
+  path: '/trainers',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
-  id: '/admin/reviews',
-  path: '/admin/reviews',
-  getParentRoute: () => rootRouteImport,
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/admin/dashboard',
-  path: '/admin/dashboard',
-  getParentRoute: () => rootRouteImport,
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
-  id: '/admin/bookings',
-  path: '/admin/bookings',
-  getParentRoute: () => rootRouteImport,
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
-  id: '/admin/analytics',
-  path: '/admin/analytics',
-  getParentRoute: () => rootRouteImport,
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ClientTrainerIdRoute = ClientTrainerIdRouteImport.update({
   id: '/client/trainer/$id',
@@ -158,6 +170,7 @@ const ClientTrainerIdRoute = ClientTrainerIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -179,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/trainer/dashboard': typeof TrainerDashboardRoute
   '/trainer/earnings': typeof TrainerEarningsRoute
   '/trainer/profile': typeof TrainerProfileRoute
+  '/admin/': typeof AdminIndexRoute
   '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRoutesByTo {
@@ -205,12 +219,14 @@ export interface FileRoutesByTo {
   '/trainer/dashboard': typeof TrainerDashboardRoute
   '/trainer/earnings': typeof TrainerEarningsRoute
   '/trainer/profile': typeof TrainerProfileRoute
+  '/admin': typeof AdminIndexRoute
   '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -232,6 +248,7 @@ export interface FileRoutesById {
   '/trainer/dashboard': typeof TrainerDashboardRoute
   '/trainer/earnings': typeof TrainerEarningsRoute
   '/trainer/profile': typeof TrainerProfileRoute
+  '/admin/': typeof AdminIndexRoute
   '/client/trainer/$id': typeof ClientTrainerIdRoute
 }
 export interface FileRouteTypes {
@@ -239,6 +256,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/dashboard'
     | '/login'
     | '/register'
@@ -260,6 +278,7 @@ export interface FileRouteTypes {
     | '/trainer/dashboard'
     | '/trainer/earnings'
     | '/trainer/profile'
+    | '/admin/'
     | '/client/trainer/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -286,11 +305,13 @@ export interface FileRouteTypes {
     | '/trainer/dashboard'
     | '/trainer/earnings'
     | '/trainer/profile'
+    | '/admin'
     | '/client/trainer/$id'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
     | '/dashboard'
     | '/login'
     | '/register'
@@ -312,21 +333,17 @@ export interface FileRouteTypes {
     | '/trainer/dashboard'
     | '/trainer/earnings'
     | '/trainer/profile'
+    | '/admin/'
     | '/client/trainer/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
-  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
-  AdminBookingsRoute: typeof AdminBookingsRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminReviewsRoute: typeof AdminReviewsRoute
-  AdminTrainersRoute: typeof AdminTrainersRoute
-  AdminUsersRoute: typeof AdminUsersRoute
   ClientBookingsRoute: typeof ClientBookingsRoute
   ClientDashboardRoute: typeof ClientDashboardRoute
   ClientDiscoverRoute: typeof ClientDiscoverRoute
@@ -365,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -378,6 +402,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/trainer/profile': {
       id: '/trainer/profile'
@@ -465,45 +496,45 @@ declare module '@tanstack/react-router' {
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/trainers': {
       id: '/admin/trainers'
-      path: '/admin/trainers'
+      path: '/trainers'
       fullPath: '/admin/trainers'
       preLoaderRoute: typeof AdminTrainersRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/reviews': {
       id: '/admin/reviews'
-      path: '/admin/reviews'
+      path: '/reviews'
       fullPath: '/admin/reviews'
       preLoaderRoute: typeof AdminReviewsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/dashboard': {
       id: '/admin/dashboard'
-      path: '/admin/dashboard'
+      path: '/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/bookings': {
       id: '/admin/bookings'
-      path: '/admin/bookings'
+      path: '/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AdminBookingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/analytics': {
       id: '/admin/analytics'
-      path: '/admin/analytics'
+      path: '/analytics'
       fullPath: '/admin/analytics'
       preLoaderRoute: typeof AdminAnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/client/trainer/$id': {
       id: '/client/trainer/$id'
@@ -515,18 +546,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  DashboardRoute: DashboardRoute,
-  LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminTrainersRoute: typeof AdminTrainersRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminTrainersRoute: AdminTrainersRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
+  DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   ClientBookingsRoute: ClientBookingsRoute,
   ClientDashboardRoute: ClientDashboardRoute,
   ClientDiscoverRoute: ClientDiscoverRoute,

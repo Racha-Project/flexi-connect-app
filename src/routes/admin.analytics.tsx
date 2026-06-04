@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/admin/analytics")({
-  component: () => <RoleGuard role="admin"><An /></RoleGuard>,
+  component: An,
 });
 
 function An() {
