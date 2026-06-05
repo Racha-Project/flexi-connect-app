@@ -3,7 +3,10 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { Calendar, Clock, Users, DollarSign, Zap, ZapOff, Loader2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/trainer/dashboard")({
   component: () => <RoleGuard role="trainer"><Dash /></RoleGuard>,
@@ -11,17 +14,36 @@ export const Route = createFileRoute("/trainer/dashboard")({
 
 function Dash() {
   const { user } = useAuth();
-  const { data } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ["trainer-dash", user?.id],
     queryFn: async () => {
-      const [{ data: bookings }, { data: slots }] = await Promise.all([
+      const [{ data: bookings }, { data: slots }, { data: tp }] = await Promise.all([
         supabase.from("bookings").select("id, booking_status, total_price, client_id").eq("trainer_id", user!.id),
         supabase.from("availability_slots").select("id, is_booked").eq("trainer_id", user!.id),
+        supabase.from("trainer_profiles").select("auto_accept").eq("user_id", user!.id).maybeSingle(),
       ]);
-      return { bookings: bookings ?? [], slots: slots ?? [] };
+      return { bookings: bookings ?? [], slots: slots ?? [], autoAccept: tp?.auto_accept ?? false };
     },
     enabled: !!user,
   });
+
+  const [toggling, setToggling] = useState(false);
+  const toggleAutoAccept = async () => {
+    if (!user) return;
+    setToggling(true);
+    const { error } = await supabase
+      .from("trainer_profiles")
+      .update({ auto_accept: !data?.autoAccept })
+      .eq("user_id", user.id);
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(`Auto-accept ${!data?.autoAccept ? "enabled" : "disabled"}`);
+      refetch();
+    }
+    setToggling(false);
+  };
 
   const b = data?.bookings ?? [];
   const stats = {
@@ -44,10 +66,35 @@ function Dash() {
         <Stat label="Earnings" value={`$${stats.earnings}`} icon={DollarSign} />
       </div>
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="font-display text-xl font-semibold">Quick actions</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Manage your availability to receive more bookings, or review pending requests.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-xl font-semibold text-foreground">Quick actions</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Manage your availability to receive more bookings, or review pending requests.
+            </p>
+          </div>
+          <button
+            onClick={toggleAutoAccept}
+            disabled={toggling}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all disabled:opacity-50 ${
+              data?.autoAccept
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "bg-muted text-muted-foreground border border-border"
+            }`}
+          >
+            {toggling ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : data?.autoAccept ? (
+              <>
+                <Zap className="h-3 w-3 fill-current" /> Auto-accept ON
+              </>
+            ) : (
+              <>
+                <ZapOff className="h-3 w-3" /> Auto-accept OFF
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

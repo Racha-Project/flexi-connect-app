@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchRankedTrainers } from "@/lib/trainers";
 import { TrainerCard } from "@/components/trainers/TrainerCard";
-import { Sparkles, Calendar, Activity, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, Calendar, Activity, ArrowRight, Loader2, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/client/dashboard")({
   component: () => (
@@ -55,6 +55,21 @@ function ClientDashboard() {
     enabled: !!user,
   });
 
+  const { data: streak } = useQuery({
+    queryKey: ["daily-streak", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("daily_logins")
+        .select("streak_count")
+        .eq("user_id", user!.id)
+        .order("login_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data?.streak_count ?? 0;
+    },
+    enabled: !!user,
+  });
+
   const top = (ranked ?? []).slice(0, 6);
 
   return (
@@ -67,7 +82,7 @@ function ClientDashboard() {
         <p className="mt-2 text-muted-foreground">Here are your top trainer matches today.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Top matches" value={ranked?.length ?? 0} icon={Sparkles} />
         <StatCard
           label="Active bookings"
@@ -75,6 +90,7 @@ function ClientDashboard() {
           icon={Calendar}
         />
         <StatCard label="Goal" value={profile?.fitness_goal?.replace("_", " ") || "Not set"} icon={Activity} />
+        <StatCard label="Login Streak" value={`${streak ?? 0} days`} icon={Flame} />
       </div>
 
       {!profile?.fitness_goal && (

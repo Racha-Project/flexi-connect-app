@@ -23,6 +23,12 @@ export function ChatBot() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ── Botnoi API Configuration ───────────────────────────────────────────────
+  // แนะนำให้ใส่ค่าเหล่านี้ในไฟล์ .env
+  const BOTNOI_API_KEY = import.meta.env.VITE_BOTNOI_API_KEY || "YOUR_API_KEY";
+  const BOTNOI_BOT_ID = import.meta.env.VITE_BOTNOI_BOT_ID || "YOUR_BOT_ID";
+  // ───────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -42,17 +48,30 @@ export function ChatBot() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      let botContent = "ขออภัยครับ ผมยังอยู่ในช่วงพัฒนา หากมีคำถามด่วนสามารถติดต่อเจ้าหน้าที่ได้เลยครับ!";
+    try {
+      // ── Integration with Botnoi.ai ──────────────────────────────────────────
+      const response = await fetch("https://openapi.botnoi.ai/api/v1/chatbot/message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${BOTNOI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          bot_id: BOTNOI_BOT_ID,
+          message: input,
+          user_id: user?.id || "anonymous_user",
+        }),
+      });
+
+      const data = await response.json();
       
-      const lowerInput = input.toLowerCase();
-      if (lowerInput.includes("สวัสดี") || lowerInput.includes("hi") || lowerInput.includes("hello")) {
-        botContent = "สวัสดีครับ! วันนี้ออกกำลังกายหรือยังครับ?";
-      } else if (lowerInput.includes("ราคา") || lowerInput.includes("ค่าใช้จ่าย")) {
-        botContent = "ราคาเทรนเนอร์แต่ละคนจะแตกต่างกันครับ คุณสามารถดูได้ในหน้า Discover นะครับ";
-      } else if (lowerInput.includes("จอง") || lowerInput.includes("booking")) {
-        botContent = "คุณสามารถจองเทรนเนอร์ได้โดยไปที่หน้าโปรไฟล์ของเทรนเนอร์ที่สนใจแล้วเลือกเวลาที่ว่างครับ";
+      let botContent = "ขออภัยครับ ระบบ Chatbot ขัดข้องชั่วคราว กรุณาลองใหม่ภายหลังครับ";
+      
+      // ตรวจสอบรูปแบบ Response จาก Botnoi (ปรับตามความจริงของ API)
+      if (data && data.response) {
+        botContent = data.response;
+      } else if (data && data.message) {
+        botContent = data.message;
       }
 
       const botMsg: Message = {
@@ -61,8 +80,17 @@ export function ChatBot() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      console.error("Botnoi API Error:", error);
+      const errorMsg: Message = {
+        role: "bot",
+        content: "ขออภัยครับ ไม่สามารถเชื่อมต่อกับผู้ช่วย AI ได้ในขณะนี้",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   return (

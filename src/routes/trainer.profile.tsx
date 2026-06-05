@@ -64,6 +64,7 @@ function P() {
         training_style: (form.training_style as string) || "flexible",
         target_client_level: (form.target_client_level as string[]) || [],
         training_modality: (form.training_modality as string[]) || [],
+        auto_accept: !!form.auto_accept,
       }).eq("user_id", user!.id),
     ]);
     setSaving(false);
@@ -120,6 +121,7 @@ function P() {
           <F label="Years of experience"><input type="number" value={(form.experience_years as number) ?? 0} onChange={(e) => setForm({ ...form, experience_years: e.target.value })} className={cls} /></F>
           <F label="Price per session ($)"><input type="number" value={(form.price_per_session as number) ?? 0} onChange={(e) => setForm({ ...form, price_per_session: e.target.value })} className={cls} /></F>
         </div>
+
         <F label="Specialties (comma separated)"><input value={specStr} onChange={(e) => setForm({ ...form, specialties_str: e.target.value })} className={cls} placeholder="strength, hypertrophy, cardio" /></F>
         <F label="Certifications (comma separated)"><input value={certStr} onChange={(e) => setForm({ ...form, certifications_str: e.target.value })} className={cls} placeholder="NASM, ACE" /></F>
         <div className="grid gap-4 sm:grid-cols-2">
