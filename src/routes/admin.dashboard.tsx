@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, ShieldCheck, Calendar, Activity, TrendingUp, DollarSign } from "lucide-react";
+import { Users, ShieldCheck, Calendar, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  component: A,
+  component: () => <RoleGuard role="admin"><A /></RoleGuard>,
 });
 
 function A() {
@@ -14,7 +15,7 @@ function A() {
       const [profiles, trainers, bookings, poses, recentBookings] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("trainer_profiles").select("id", { count: "exact", head: true }),
-        supabase.from("bookings").select("id, total_price, commission_amount, booking_status"),
+        supabase.from("bookings").select("id", { count: "exact", head: true }),
         supabase.from("pose_sessions").select("id", { count: "exact", head: true }),
         supabase
           .from("bookings")
@@ -22,27 +23,11 @@ function A() {
           .order("created_at", { ascending: false })
           .limit(5),
       ]);
-
-      const allBookings = bookings.data ?? [];
-      let totalGross = 0;
-      let platformProfit = 0;
-
-      allBookings.forEach(b => {
-        if (b.booking_status === "completed") {
-          const gross = Number(b.total_price ?? 0);
-          const profit = b.commission_amount !== null ? Number(b.commission_amount) : gross * 0.1;
-          totalGross += gross;
-          platformProfit += profit;
-        }
-      });
-
       return {
         users: profiles.count ?? 0,
         trainers: trainers.count ?? 0,
-        bookings: allBookings.length,
+        bookings: bookings.count ?? 0,
         poses: poses.count ?? 0,
-        totalGross,
-        platformProfit,
         recentBookings: recentBookings.data ?? [],
       };
     },
@@ -58,8 +43,8 @@ function A() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <S label="Total users" value={data?.users ?? 0} icon={Users} />
         <S label="Trainers" value={data?.trainers ?? 0} icon={ShieldCheck} />
-        <S label="Gross Revenue" value={`฿${data?.totalGross.toLocaleString()}`} icon={DollarSign} />
-        <S label="Platform Profit" value={`฿${data?.platformProfit.toLocaleString()}`} icon={TrendingUp} highlight />
+        <S label="Bookings" value={data?.bookings ?? 0} icon={Calendar} />
+        <S label="Pose sessions" value={data?.poses ?? 0} icon={Activity} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -112,11 +97,11 @@ function A() {
   );
 }
 
-function S({ label, value, icon: Icon, highlight }: { label: string; value: string | number; icon: typeof Users, highlight?: boolean }) {
+function S({ label, value, icon: Icon }: { label: string; value: number; icon: typeof Users }) {
   return (
-    <div className={`rounded-xl border border-border bg-card p-6 ${highlight ? 'border-primary/50 bg-primary/5' : ''}`}>
-      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">{label} <Icon className={`h-4 w-4 ${highlight ? 'text-primary' : 'text-primary'}`} /></div>
-      <div className={`mt-3 font-display text-3xl font-bold ${highlight ? 'text-primary' : ''}`}>{value}</div>
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">{label} <Icon className="h-4 w-4 text-primary" /></div>
+      <div className="mt-3 font-display text-4xl font-bold">{value}</div>
     </div>
   );
 }

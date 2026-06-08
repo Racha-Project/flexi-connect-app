@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export type AppRole = "client" | "trainer" | "admin";
 
@@ -29,21 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", uid)
       .maybeSingle();
     setRole((data?.role as AppRole) ?? null);
-    
-    // ✅ Record daily login when role is loaded (user is authenticated)
-    try {
-      const { data: loginRes, error } = await supabase.rpc("record_daily_login", {
-        p_user_id: uid,
-      });
-      if (!error && loginRes && (loginRes as any).new_login) {
-        toast.success(`ยินดีต้อนรับกลับมา! Streak การเข้าใช้งาน: ${(loginRes as any).streak} วัน 🔥`, {
-          description: "เข้าใช้งานทุกวันเพื่อรักษาสถิตินะครับ",
-          duration: 5000,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to record daily login:", err);
-    }
   };
 
   useEffect(() => {

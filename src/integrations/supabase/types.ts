@@ -51,11 +51,8 @@ export type Database = {
         Row: {
           booking_status: Database["public"]["Enums"]["booking_status"]
           client_id: string
-          commission_amount: number | null
-          commission_rate: number | null
           created_at: string
           id: string
-          net_amount: number | null
           notes: string | null
           slot_id: string
           total_price: number | null
@@ -65,11 +62,8 @@ export type Database = {
         Insert: {
           booking_status?: Database["public"]["Enums"]["booking_status"]
           client_id: string
-          commission_amount?: number | null
-          commission_rate?: number | null
           created_at?: string
           id?: string
-          net_amount?: number | null
           notes?: string | null
           slot_id: string
           total_price?: number | null
@@ -79,11 +73,8 @@ export type Database = {
         Update: {
           booking_status?: Database["public"]["Enums"]["booking_status"]
           client_id?: string
-          commission_amount?: number | null
-          commission_rate?: number | null
           created_at?: string
           id?: string
-          net_amount?: number | null
           notes?: string | null
           slot_id?: string
           total_price?: number | null
@@ -96,38 +87,6 @@ export type Database = {
             columns: ["slot_id"]
             isOneToOne: true
             referencedRelation: "availability_slots"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      daily_logins: {
-        Row: {
-          created_at: string
-          id: string
-          login_date: string
-          streak_count: number | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          login_date?: string
-          streak_count?: number | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          login_date?: string
-          streak_count?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "daily_logins_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -323,7 +282,6 @@ export type Database = {
       }
       trainer_profiles: {
         Row: {
-          auto_accept: boolean | null
           bio: string | null
           certifications: string[] | null
           created_at: string
@@ -346,7 +304,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          auto_accept?: boolean | null
           bio?: string | null
           certifications?: string[] | null
           created_at?: string
@@ -369,7 +326,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          auto_accept?: boolean | null
           bio?: string | null
           certifications?: string[] | null
           created_at?: string
@@ -416,10 +372,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      record_daily_login: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
