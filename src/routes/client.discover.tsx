@@ -19,7 +19,7 @@ export const Route = createFileRoute("/client/discover")({
 function Discover() {
   const { user } = useAuth();
   const [q, setQ] = useState("");
-  const [maxPrice, setMaxPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(2000);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<"match" | "price" | "rating">("match");
 
@@ -41,8 +41,12 @@ function Discover() {
         budget_max: profile?.budget_max,
         preferred_trainer_gender: profile?.preferred_trainer_gender,
         preferred_experience: profile?.preferred_experience,
+        experience_level: profile?.experience_level,
         latitude: profile?.latitude,
         longitude: profile?.longitude,
+        training_style_pref: profile?.preferred_style,
+        sessions_per_week_pref: profile?.sessions_per_week,
+        training_modality_pref: profile?.training_modality,
       }),
     enabled: !!profile,
   });
@@ -78,7 +82,7 @@ function Discover() {
         </div>
         <div>
           <label className="text-xs uppercase tracking-widest text-muted-foreground">Max price ${maxPrice}</label>
-          <input type="range" min={20} max={500} step={10} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="mt-2 w-full accent-primary" />
+          <input type="range" min={0} max={2000} step={50} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="mt-2 w-full accent-primary" />
         </div>
         <div>
           <label className="text-xs uppercase tracking-widest text-muted-foreground">Sort by</label>

@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchRankedTrainers } from "@/lib/trainers";
 import { TrainerCard } from "@/components/trainers/TrainerCard";
-import { Sparkles, Calendar, Activity, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, Calendar, Activity, ArrowRight, Loader2, Gift } from "lucide-react";
+import { DailyReward } from "@/components/auth/DailyReward";
 
 export const Route = createFileRoute("/client/dashboard")({
   component: () => (
@@ -36,8 +37,12 @@ function ClientDashboard() {
         budget_max: profile?.budget_max,
         preferred_trainer_gender: profile?.preferred_trainer_gender,
         preferred_experience: profile?.preferred_experience,
+        experience_level: profile?.experience_level,
         latitude: profile?.latitude,
         longitude: profile?.longitude,
+        training_style_pref: profile?.preferred_style,
+        sessions_per_week_pref: profile?.sessions_per_week,
+        training_modality_pref: profile?.training_modality,
       }),
     enabled: !!profile,
   });
@@ -55,6 +60,7 @@ function ClientDashboard() {
 
   return (
     <div className="space-y-8">
+      <DailyReward />
       <div>
         <div className="text-xs uppercase tracking-widest text-primary">Welcome back</div>
         <h1 className="mt-1 font-display text-4xl font-bold">
@@ -63,7 +69,8 @@ function ClientDashboard() {
         <p className="mt-2 text-muted-foreground">Here are your top trainer matches today.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Reward Points" value={profile?.reward_points || 0} icon={Gift} />
         <StatCard label="Top matches" value={ranked?.length ?? 0} icon={Sparkles} />
         <StatCard
           label="Active bookings"

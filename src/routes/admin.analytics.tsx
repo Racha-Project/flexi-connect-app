@@ -12,28 +12,83 @@ function An() {
   const { data } = useQuery({
     queryKey: ["analytics"],
     queryFn: async () => {
-      const { data: b } = await supabase.from("bookings").select("booking_status");
+      const { data: b } = await supabase.from("bookings").select("booking_status, total_price, commission_amount, created_at");
+      
       const counts: Record<string, number> = {};
-      (b ?? []).forEach((x) => { counts[x.booking_status] = (counts[x.booking_status] ?? 0) + 1; });
-      return Object.entries(counts).map(([status, count]) => ({ status, count }));
+      let totalRevenue = 0;
+      let totalCommission = 0;
+      
+      const monthlyRevenue: Record<string, { month: string, revenue: number, commission: number }> = {};
+
+      (b ?? []).forEach((x) => { 
+        counts[x.booking_status] = (counts[x.booking_status] ?? 0) + 1;
+        
+        if (x.booking_status === "completed") {
+          totalRevenue += Number(x.total_price ?? 0);
+          totalCommission += Number(x.commission_amount ?? 0);
+          
+          const date = new Date(x.created_at);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (!monthlyRevenue[monthKey]) {
+            monthlyRevenue[monthKey] = { month: monthKey, revenue: 0, commission: 0 };
+          }
+          monthlyRevenue[monthKey].revenue += Number(x.total_price ?? 0);
+          monthlyRevenue[monthKey].commission += Number(x.commission_amount ?? 0);
+        }
+      });
+
+      return {
+        statusCounts: Object.entries(counts).map(([status, count]) => ({ status, count })),
+        revenueData: Object.values(monthlyRevenue).sort((a, b) => a.month.localeCompare(b.month)),
+        totals: { revenue: totalRevenue, commission: totalCommission }
+      };
     },
   });
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-4xl font-bold">Analytics</h1>
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 font-display text-lg font-semibold">Bookings by status</h2>
-        <div className="h-72">
-          <ResponsiveContainer>
-            <BarChart data={data ?? []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
-              <XAxis dataKey="status" stroke="oklch(0.7 0 0)" />
-              <YAxis stroke="oklch(0.7 0 0)" />
-              <Tooltip contentStyle={{ background: "oklch(0.2 0 0)", border: "1px solid oklch(0.3 0 0)" }} />
-              <Bar dataKey="count" fill="oklch(0.92 0.22 119)" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Total Platform Revenue</div>
+          <div className="mt-2 text-3xl font-bold">${data?.totals.revenue.toFixed(2)}</div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">Total Commission (10%)</div>
+          <div className="mt-2 text-3xl font-bold text-primary">${data?.totals.commission.toFixed(2)}</div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-4 font-display text-lg font-semibold">Bookings by status</h2>
+          <div className="h-72">
+            <ResponsiveContainer>
+              <BarChart data={data?.statusCounts ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
+                <XAxis dataKey="status" stroke="oklch(0.7 0 0)" />
+                <YAxis stroke="oklch(0.7 0 0)" />
+                <Tooltip contentStyle={{ background: "oklch(0.2 0 0)", border: "1px solid oklch(0.3 0 0)" }} />
+                <Bar dataKey="count" fill="oklch(0.92 0.22 119)" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-4 font-display text-lg font-semibold">Platform Commission (Monthly)</h2>
+          <div className="h-72">
+            <ResponsiveContainer>
+              <BarChart data={data?.revenueData ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
+                <XAxis dataKey="month" stroke="oklch(0.7 0 0)" />
+                <YAxis stroke="oklch(0.7 0 0)" />
+                <Tooltip contentStyle={{ background: "oklch(0.2 0 0)", border: "1px solid oklch(0.3 0 0)" }} />
+                <Bar dataKey="commission" fill="oklch(0.6 0.18 259)" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

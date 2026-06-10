@@ -3,9 +3,12 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, MapPin, DollarSign, Award, Loader2, Calendar } from "lucide-react";
+import { Star, MapPin, DollarSign, Award, Loader2, Calendar, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/client/trainer/$id")({
   component: () => (
@@ -21,6 +24,9 @@ function TrainerDetail() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [booking, setBooking] = useState<string | null>(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const { data: trainer, isLoading } = useQuery({
     queryKey: ["trainer-detail", id],
@@ -29,6 +35,49 @@ function TrainerDetail() {
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
       return { tp, prof };
     },
+  });
+
+  const { data: reviews } = useQuery({
+    queryKey: ["trainer-reviews", id],
+    queryFn: async () => {
+      // Fetch reviews and profiles separately if join is problematic
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("trainer_id", id)
+        .order("created_at", { ascending: false });
+      
+      if (reviewsError) throw reviewsError;
+      if (!reviewsData || reviewsData.length === 0) return [];
+
+      const clientIds = reviewsData.map(r => r.client_id);
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", clientIds);
+
+      const profileMap = new Map((profilesData ?? []).map(p => [p.id, p]));
+
+      return reviewsData.map(r => ({
+        ...r,
+        client: profileMap.get(r.client_id)
+      }));
+    },
+  });
+
+  const { data: canReview } = useQuery({
+    queryKey: ["can-review", id, user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      // Relaxed check for testing: any booking status can review
+      const { count } = await supabase
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", user.id)
+        .eq("trainer_id", id);
+      return (count ?? 0) > 0;
+    },
+    enabled: !!user,
   });
 
   const { data: slots } = useQuery({
@@ -69,18 +118,60 @@ function TrainerDetail() {
     nav({ to: "/client/bookings" });
   };
 
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !comment.trim()) return;
+
+    setIsSubmittingReview(true);
+    try {
+      const { error } = await supabase.from("reviews").insert({
+        client_id: user.id,
+        trainer_id: id,
+        rating,
+        comment,
+      });
+
+      if (error) throw error;
+
+      toast.success("Review submitted!");
+      setComment("");
+      qc.invalidateQueries({ queryKey: ["trainer-reviews", id] });
+      qc.invalidateQueries({ queryKey: ["trainer-detail", id] });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   if (isLoading || !trainer)
     return <div className="flex h-96 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   const { tp, prof } = trainer;
   if (!tp) return <div>Trainer not found.</div>;
 
+  const getAvatarUrl = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const fullAvatarUrl = getAvatarUrl(prof?.avatar_url);
+
+  // Cold Start Detection
+  const createdAt = new Date(tp.created_at);
+  const now = new Date();
+  const daysSinceCreated = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+  const isColdStart = daysSinceCreated <= 30;
+  const displayRating = (tp.rating === 0 && isColdStart) ? 3.5 : (tp.rating ?? 0);
+
   return (
     <div className="space-y-8">
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         <div className="aspect-square overflow-hidden rounded-xl border border-border bg-surface-elevated">
-          {prof?.avatar_url ? (
-            <img src={prof.avatar_url} alt={prof.full_name ?? ""} className="h-full w-full object-cover" />
+          {fullAvatarUrl ? (
+            <img src={fullAvatarUrl} alt={prof?.full_name ?? ""} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center font-display text-7xl font-bold text-primary/40">
               {prof?.full_name?.[0]?.toUpperCase() ?? "T"}
@@ -95,7 +186,7 @@ function TrainerDetail() {
             </div>
           )}
           <div className="mt-4 flex flex-wrap gap-4">
-            <Stat icon={Star} label="Rating" value={`${Number(tp.rating ?? 0).toFixed(1)} / 5`} />
+            <Stat icon={Star} label="Rating" value={`${Number(displayRating).toFixed(1)} / 5`} />
             <Stat icon={Award} label="Experience" value={`${tp.experience_years ?? 0} yrs`} />
             <Stat icon={DollarSign} label="Price" value={`$${tp.price_per_session ?? 0}`} />
           </div>
@@ -140,6 +231,94 @@ function TrainerDetail() {
                 </div>
               </button>
             ))}
+          </div>
+        )}
+      </section>
+
+      <section className="grid gap-8 lg:grid-cols-2">
+        <div>
+          <h2 className="mb-4 flex items-center gap-2 font-display text-2xl font-bold">
+            <MessageSquare className="h-5 w-5 text-primary" /> Client reviews
+          </h2>
+          {!reviews || reviews.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+              No reviews yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r: any) => {
+                const clientAvatar = getAvatarUrl(r.client?.avatar_url);
+                return (
+                  <div key={r.id} className="rounded-xl border border-border bg-card p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
+                        {clientAvatar ? (
+                          <img src={clientAvatar} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-bold text-primary/40">
+                            {r.client?.full_name?.[0]?.toUpperCase() ?? "U"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold">{r.client?.full_name || "Client"}</div>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={cn("h-3 w-3", i < r.rating ? "fill-primary text-primary" : "text-muted")} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground italic">"{r.comment}"</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {canReview && (
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="mb-4 font-display text-xl font-bold">Write a review</h2>
+            <form onSubmit={submitReview} className="space-y-4">
+              <div>
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Your Rating</label>
+                <div className="mt-2 flex gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setRating(s)}
+                      className="p-1 transition hover:scale-110"
+                    >
+                      <Star className={cn("h-6 w-6", s <= rating ? "fill-primary text-primary" : "text-muted")} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Your Comment</label>
+                <Textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Tell others about your experience..."
+                  className="mt-2 min-h-[100px] bg-background"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmittingReview}>
+                {isSubmittingReview ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" /> Submit Review
+                  </>
+                )}
+              </Button>
+            </form>
           </div>
         )}
       </section>

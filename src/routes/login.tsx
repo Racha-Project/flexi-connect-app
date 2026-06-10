@@ -1,17 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { Logo } from "@/components/layout/Logo";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Login — LachaFit" }] }),
+  head: () => ({ meta: [{ title: "Login — Fitder" }] }),
   component: Login,
 });
 
 function Login() {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const { user, role } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,26 +31,27 @@ function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Welcome back!");
+    else toast.success(t("auth.welcome_back"));
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="absolute inset-0 grid-bg opacity-20" />
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-8">
         <Link to="/" className="mb-8 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
-            <Dumbbell className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold">LachaFit</span>
+          <Logo className="h-9 w-9" iconClassName="h-5 w-5" />
+          <span className="font-display text-xl font-bold">Fitder</span>
         </Link>
-        <h1 className="font-display text-3xl font-bold">Welcome back</h1>
+        <h1 className="font-display text-3xl font-bold">{t("auth.welcome_to_fitder")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to keep training.
+          {t("auth.login_subtitle")}
         </p>
         <form onSubmit={submit} className="mt-8 space-y-4">
           <div>
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">Email</label>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground">{t("auth.email")}</label>
             <input
               type="email"
               required
@@ -56,7 +61,7 @@ function Login() {
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">Password</label>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground">{t("auth.password")}</label>
             <input
               type="password"
               required
@@ -70,13 +75,13 @@ function Login() {
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Sign in
+            {t("auth.sign_in")}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          New here?{" "}
+          {t("auth.new_here")}{" "}
           <Link to="/register" className="font-semibold text-primary hover:underline">
-            Create an account
+            {t("auth.create_account")}
           </Link>
         </p>
       </div>

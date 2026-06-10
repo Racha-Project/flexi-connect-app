@@ -28,6 +28,7 @@ import { Route as ClientDashboardRouteImport } from './routes/client.dashboard'
 import { Route as ClientBookingsRouteImport } from './routes/client.bookings'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTrainersRouteImport } from './routes/admin.trainers'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -128,6 +129,11 @@ const AdminTrainersRoute = AdminTrainersRouteImport.update({
   path: '/admin/trainers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/trainers': typeof AdminTrainersRoute
   '/admin/users': typeof AdminUsersRoute
   '/client/bookings': typeof ClientBookingsRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/trainers': typeof AdminTrainersRoute
   '/admin/users': typeof AdminUsersRoute
   '/client/bookings': typeof ClientBookingsRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/trainers': typeof AdminTrainersRoute
   '/admin/users': typeof AdminUsersRoute
   '/client/bookings': typeof ClientBookingsRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/bookings'
     | '/admin/dashboard'
+    | '/admin/reviews'
     | '/admin/trainers'
     | '/admin/users'
     | '/client/bookings'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/bookings'
     | '/admin/dashboard'
+    | '/admin/reviews'
     | '/admin/trainers'
     | '/admin/users'
     | '/client/bookings'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/bookings'
     | '/admin/dashboard'
+    | '/admin/reviews'
     | '/admin/trainers'
     | '/admin/users'
     | '/client/bookings'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   AdminTrainersRoute: typeof AdminTrainersRoute
   AdminUsersRoute: typeof AdminUsersRoute
   ClientBookingsRoute: typeof ClientBookingsRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrainersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/admin/dashboard'
@@ -504,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   AdminTrainersRoute: AdminTrainersRoute,
   AdminUsersRoute: AdminUsersRoute,
   ClientBookingsRoute: ClientBookingsRoute,
