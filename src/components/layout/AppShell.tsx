@@ -1,4 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Logo } from "@/components/layout/Logo";
 import {
   LayoutDashboard,
   Search,
@@ -66,9 +67,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <Dumbbell className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <Logo />
           <span className="font-display text-lg font-bold tracking-tight">
             Fitder
           </span>
