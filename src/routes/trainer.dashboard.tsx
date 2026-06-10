@@ -55,17 +55,17 @@ function Dash() {
   });
 
   const b = data?.bookings ?? [];
-  const completedBookings = b.filter((x) => x.booking_status === "completed");
+  const earnedBookings = b.filter((x) => x.booking_status === "completed" || x.booking_status === "accepted");
   const stats = {
     pending: b.filter((x) => x.booking_status === "pending").length,
     accepted: b.filter((x) => x.booking_status === "accepted").length,
     clients: new Set(b.map((x) => x.client_id)).size,
-    grossEarnings: completedBookings.reduce((s, x) => s + Number(x.total_price ?? 0), 0),
-    netEarnings: completedBookings.reduce((s, x) => {
+    grossEarnings: earnedBookings.reduce((s, x) => s + Number(x.total_price ?? 0), 0),
+    netEarnings: earnedBookings.reduce((s, x) => {
       const gross = Number(x.total_price ?? 0);
       const net = x.net_amount !== null && x.net_amount !== undefined 
         ? Number(x.net_amount) 
-        : gross * 0.9; // Fallback to 90% if net_amount is not set
+        : gross * 0.9; 
       return s + net;
     }, 0),
     rewardPoints: data?.profile?.reward_points ?? 0,
@@ -84,9 +84,9 @@ function Dash() {
         <Stat label="Unique clients" value={stats.clients} icon={Users} />
         <Stat 
           label="Net Earnings" 
-          value={`$${stats.netEarnings}`} 
+          value={`$${stats.netEarnings.toFixed(2)}`} 
           icon={DollarSign} 
-          subValue={`Gross: $${stats.grossEarnings}`}
+          subValue={`Gross: $${stats.grossEarnings.toFixed(2)}`}
         />
         <Stat label="Reward Points" value={stats.rewardPoints} icon={Gift} />
       </div>
