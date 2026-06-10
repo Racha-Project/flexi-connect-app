@@ -99,12 +99,15 @@ function TrainerDetail() {
   const book = async (slotId: string) => {
     if (!user || !trainer?.tp) return;
     setBooking(slotId);
+    
+    const isAutoAccept = (trainer.tp as any).auto_accept === true;
+    
     const { error } = await supabase.from("bookings").insert({
       client_id: user.id,
       trainer_id: id,
       slot_id: slotId,
       total_price: trainer.tp.price_per_session ?? 0,
-      booking_status: "pending",
+      booking_status: isAutoAccept ? "accepted" : "pending",
     });
     if (error) {
       toast.error(error.message);
@@ -112,7 +115,7 @@ function TrainerDetail() {
       return;
     }
     await supabase.from("availability_slots").update({ is_booked: true }).eq("id", slotId);
-    toast.success("Booking requested!");
+    toast.success(isAutoAccept ? "Booking confirmed automatically!" : "Booking requested!");
     qc.invalidateQueries({ queryKey: ["slots", id] });
     setBooking(null);
     nav({ to: "/client/bookings" });
