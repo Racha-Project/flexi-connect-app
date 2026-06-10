@@ -70,7 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Dumbbell className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="font-display text-lg font-bold tracking-tight">
-            LachaFit
+            Fitder
           </span>
         </div>
         <nav className="flex-1 overflow-y-auto flex flex-col gap-1 p-3">
@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <div className="hidden font-display text-sm uppercase tracking-widest text-muted-foreground lg:block">
-            {role} · LachaFit
+            {role} · Fitder
           </div>
           <div className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString(undefined, {

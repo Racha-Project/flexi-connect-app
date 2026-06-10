@@ -16,11 +16,11 @@ import { Logo } from "@/components/layout/Logo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LachaFit — Smart Personal Trainer Matching" },
+      { title: "Fitder — Smart Personal Trainer Matching" },
       {
         name: "description",
         content:
-          "AI-matched personal trainers, instant booking, and live posture correction. Train smarter with LachaFit.",
+          "AI-matched personal trainers, instant booking, and live posture correction. Train smarter with Fitder.",
       },
     ],
   }),
@@ -233,7 +233,7 @@ function Landing() {
 
       <footer className="border-t border-border bg-background py-8">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 text-sm text-muted-foreground">
-          <span>© {new Date().getFullYear()} LachaFit</span>
+          <span>© {new Date().getFullYear()} Fitder</span>
           <Link to="/about" className="hover:text-foreground">About</Link>
         </div>
       </footer>
