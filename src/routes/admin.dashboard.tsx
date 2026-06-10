@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, ShieldCheck, Calendar, Activity, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  component: () => <RoleGuard role="admin"><A /></RoleGuard>,
+  component: A,
 });
 
 function A() {
@@ -44,7 +43,7 @@ function A() {
         <h1 className="mt-1 font-display text-4xl font-bold">Platform overview</h1>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <S label="Total users" value={data?.users ?? 0} icon={Users} />
         <S label="Trainers" value={data?.trainers ?? 0} icon={ShieldCheck} />
         <S label="Bookings" value={data?.bookingsCount ?? 0} icon={Calendar} />
@@ -105,8 +104,11 @@ function A() {
 function S({ label, value, icon: Icon }: { label: string; value: number | string; icon: typeof Users }) {
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">{label} <Icon className="h-4 w-4 text-primary" /></div>
-      <div className="mt-3 font-display text-4xl font-bold">{value}</div>
+      <div className="flex items-center justify-between gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+        <span className="truncate">{label}</span>
+        <Icon className="h-4 w-4 shrink-0 text-primary" />
+      </div>
+      <div className="mt-3 font-display text-2xl font-bold sm:text-3xl truncate">{value}</div>
     </div>
   );
 }
