@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, Users, DollarSign, Gift } from "lucide-react";
+import { Calendar, Clock, Users, DollarSign, Gift, Zap } from "lucide-react";
 import { DailyReward } from "@/components/auth/DailyReward";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/trainer/dashboard")({
   component: () => <RoleGuard role="trainer"><Dash /></RoleGuard>,
@@ -12,17 +15,43 @@ export const Route = createFileRoute("/trainer/dashboard")({
 
 function Dash() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const { data } = useQuery({
     queryKey: ["trainer-dash", user?.id],
     queryFn: async () => {
-      const [{ data: bookings }, { data: slots }, { data: profile }] = await Promise.all([
+      const [{ data: bookings }, { data: slots }, { data: profile }, { data: trainerProfile }] = await Promise.all([
         supabase.from("bookings").select("id, booking_status, total_price, commission_amount, net_amount, client_id").eq("trainer_id", user!.id),
         supabase.from("availability_slots").select("id, is_booked").eq("trainer_id", user!.id),
         supabase.from("profiles").select("reward_points").eq("id", user!.id).maybeSingle(),
+        supabase.from("trainer_profiles").select("auto_accept").eq("user_id", user!.id).maybeSingle(),
       ]);
-      return { bookings: bookings ?? [], slots: slots ?? [], profile };
+      return { 
+        bookings: bookings ?? [], 
+        slots: slots ?? [], 
+        profile,
+        autoAccept: trainerProfile?.auto_accept ?? false
+      };
     },
     enabled: !!user,
+  });
+
+  const updateAutoAccept = useMutation({
+    mutationFn: async (checked: boolean) => {
+      const { error } = await supabase
+        .from("trainer_profiles")
+        .update({ auto_accept: checked } as any)
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return checked;
+    },
+    onSuccess: (checked) => {
+      queryClient.invalidateQueries({ queryKey: ["trainer-dash", user?.id] });
+      toast.success(checked ? "Auto-accept enabled" : "Auto-accept disabled");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update settings");
+    },
   });
 
   const b = data?.bookings ?? [];
@@ -55,11 +84,38 @@ function Dash() {
         />
         <Stat label="Reward Points" value={stats.rewardPoints} icon={Gift} />
       </div>
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="font-display text-xl font-semibold">Quick actions</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Manage your availability to receive more bookings, or review pending requests.
-        </p>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="font-display text-xl font-semibold">Quick actions</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage your availability to receive more bookings, or review pending requests.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                Auto-accept Customers
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Automatically accept all incoming booking requests.
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="auto-accept" 
+                checked={data?.autoAccept ?? false}
+                onCheckedChange={(checked) => updateAutoAccept.mutate(checked)}
+                disabled={updateAutoAccept.isPending}
+              />
+              <Label htmlFor="auto-accept">
+                {data?.autoAccept ? "On" : "Off"}
+              </Label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
