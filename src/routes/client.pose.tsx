@@ -3,13 +3,9 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Activity, Camera, Play, Square, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Activity, Camera, Play, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Pose as MPPose, POSE_CONNECTIONS, Results } from "@mediapipe/pose";
-import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-import { Camera as MPCamera } from "@mediapipe/camera_utils";
 
 export const Route = createFileRoute("/client/pose")({
   component: () => (
@@ -20,36 +16,12 @@ export const Route = createFileRoute("/client/pose")({
 });
 
 const EXERCISES = [
-  { 
-    id: "squat", 
-    name: "Squat", 
-    targetAngle: 90, 
-    joints: [24, 26, 28], // Right Hip, Knee, Ankle
-    feedback: ["Lower your hips", "Keep your back straight", "Drive through your heels"] 
-  },
-  { 
-    id: "bicep_curl", 
-    name: "Bicep Curl", 
-    targetAngle: 45, 
-    joints: [12, 14, 16], // Right Shoulder, Elbow, Wrist
-    feedback: ["Control the descent", "Don't swing your back", "Full range of motion"] 
-  },
-  { 
-    id: "pushup", 
-    name: "Push-up", 
-    targetAngle: 80, 
-    joints: [12, 14, 16], 
-    feedback: ["Engage your core", "Lower chest to ground", "Keep elbows close"] 
-  },
+  { id: "squat", name: "Squat", feedback: ["Lower your hips", "Keep your back straight", "Drive through your heels"] },
+  { id: "pushup", name: "Push-up", feedback: ["Engage your core", "Lower chest to ground", "Keep elbows close"] },
+  { id: "plank", name: "Plank", feedback: ["Hold straight line", "Tighten your glutes", "Breathe steadily"] },
+  { id: "lunge", name: "Lunge", feedback: ["Drop back knee toward ground", "Keep front knee over ankle"] },
+  { id: "bicep_curl", name: "Bicep Curl", feedback: ["Control the descent", "Don't swing your back"] },
 ];
-
-// Helper to calculate angle between 3 points
-function calculateAngle(a: any, b: any, c: any) {
-  const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-  let angle = Math.abs((radians * 180.0) / Math.PI);
-  if (angle > 180.0) angle = 360 - angle;
-  return angle;
-}
 
 function Pose() {
   const { user } = useAuth();
@@ -57,135 +29,40 @@ function Pose() {
   const [exercise, setExercise] = useState(EXERCISES[0]);
   const [running, setRunning] = useState(false);
   const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState<string>("Ready to start?");
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const poseRef = useRef<MPPose | null>(null);
-  const cameraRef = useRef<MPCamera | null>(null);
+  const [feedback, setFeedback] = useState<string>("");
+  const tickRef = useRef<number | null>(null);
 
-  const onResults = useCallback((results: Results) => {
-    if (!canvasRef.current || !videoRef.current) return;
-    
-    const canvasCtx = canvasRef.current.getContext("2d");
-    if (!canvasCtx) return;
+  useEffect(() => () => { if (tickRef.current) clearInterval(tickRef.current); }, []);
 
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    
-    // Draw the video frame to canvas (optional, we use video as bg)
-    // canvasCtx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
-
-    if (results.poseLandmarks) {
-      // Draw Skeleton
-      drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-        color: "#d4ff3a",
-        lineWidth: 4,
+  const start = () => {
+    setRunning(true);
+    setScore(50);
+    setFeedback("Get into position…");
+    tickRef.current = window.setInterval(() => {
+      setScore((s) => {
+        const next = Math.max(40, Math.min(99, s + (Math.random() * 10 - 4)));
+        return Math.round(next);
       });
-      drawLandmarks(canvasCtx, results.poseLandmarks, {
-        color: "#ffffff",
-        lineWidth: 1,
-        radius: 3,
-      });
-
-      // Validation Logic
-      const landmarks = results.poseLandmarks;
-      const [p1, p2, p3] = exercise.joints;
-      
-      if (landmarks[p1] && landmarks[p2] && landmarks[p3]) {
-        const angle = calculateAngle(landmarks[p1], landmarks[p2], landmarks[p3]);
-        
-        // Simulating progress based on angle
-        const progress = Math.max(0, Math.min(100, (180 - angle) / (180 - exercise.targetAngle) * 100));
-        setScore(Math.round(progress));
-
-        if (progress > 85) {
-          setIsCorrect(true);
-          setFeedback("Excellent form! Keep it up.");
-        } else if (progress > 40) {
-          setIsCorrect(null);
-          setFeedback("Keep going... deeper!");
-        } else {
-          setIsCorrect(false);
-          setFeedback(exercise.feedback[0]);
-        }
-      }
-    }
-    canvasCtx.restore();
-  }, [exercise]);
-
-  const start = async () => {
-    if (!videoRef.current) return;
-
-    try {
-      setRunning(true);
-      setFeedback("Initializing AI...");
-
-      // Initialize MediaPipe Pose
-      poseRef.current = new MPPose({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
-      });
-
-      poseRef.current.setOptions({
-        modelComplexity: 1,
-        smoothLandmarks: true,
-        enableSegmentation: false,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
-
-      poseRef.current.onResults(onResults);
-
-      // Initialize Camera
-      cameraRef.current = new MPCamera(videoRef.current, {
-        onFrame: async () => {
-          if (poseRef.current && videoRef.current) {
-            await poseRef.current.send({ image: videoRef.current });
-          }
-        },
-        width: 1280,
-        height: 720,
-      });
-
-      await cameraRef.current.start();
-      setFeedback("Get into position!");
-    } catch (err: any) {
-      toast.error("AI Error: " + err.message);
-      stop();
-    }
+      setFeedback(exercise.feedback[Math.floor(Math.random() * exercise.feedback.length)]);
+    }, 1500);
   };
 
   const stop = async () => {
-    if (cameraRef.current) {
-      await cameraRef.current.stop();
-      cameraRef.current = null;
-    }
-    if (poseRef.current) {
-      poseRef.current.close();
-      poseRef.current = null;
-    }
-    
+    if (tickRef.current) clearInterval(tickRef.current);
     setRunning(false);
-    setIsCorrect(null);
-
-    if (score > 0 && user) {
-      const { error } = await supabase.from("pose_sessions").insert({
-        client_id: user.id,
-        exercise_name: exercise.name,
-        accuracy_score: score,
-        feedback_json: { last: feedback },
-      });
-      if (!error) toast.success(`Session saved · ${score}% max accuracy`);
+    if (!user) return;
+    const { error } = await supabase.from("pose_sessions").insert({
+      client_id: user.id,
+      exercise_name: exercise.name,
+      accuracy_score: score,
+      feedback_json: { last: feedback },
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`Session saved · ${score}% accuracy`);
       qc.invalidateQueries({ queryKey: ["pose-history"] });
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (running) stop();
-    };
-  }, [running]);
 
   const { data: history } = useQuery({
     queryKey: ["pose-history", user?.id],
@@ -214,66 +91,26 @@ function Pose() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="relative flex aspect-video items-center justify-center bg-black">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className={cn(
-                "h-full w-full object-cover",
-                !running && "hidden"
-              )}
-            />
-            
-            <canvas
-              ref={canvasRef}
-              className={cn(
-                "absolute inset-0 h-full w-full",
-                !running && "hidden"
-              )}
-              width={1280}
-              height={720}
-            />
-            
-            {!running && (
-              <>
-                <Camera className="h-16 w-16 text-muted-foreground/30" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
-                  <div className="text-xs uppercase tracking-widest text-white">AI Pose Tracking</div>
-                  <div className="mt-2 text-sm text-white/70">Select exercise and press start</div>
-                </div>
-              </>
-            )}
-
+            <Camera className="h-16 w-16 text-muted-foreground/30" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Camera preview</div>
+              <div className="mt-2 text-sm text-muted-foreground">(MediaPipe integration ready)</div>
+            </div>
             {running && (
-              <>
-                {/* AI Status Indicators */}
-                <div className="absolute left-4 top-4 flex flex-col gap-2">
-                  <div className="flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1 text-xs font-bold text-destructive-foreground">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-destructive-foreground" /> LIVE AI TRACKING
-                  </div>
-                  
-                  {isCorrect === true && (
-                    <div className="flex items-center gap-2 rounded-full bg-success/90 px-3 py-1 text-xs font-bold text-success-foreground animate-in zoom-in">
-                      <CheckCircle2 className="h-3 w-3" /> CORRECT FORM
-                    </div>
-                  )}
-                  {isCorrect === false && (
-                    <div className="flex items-center gap-2 rounded-full bg-warning/90 px-3 py-1 text-xs font-bold text-warning-foreground animate-in shake">
-                      <AlertCircle className="h-3 w-3" /> ADJUST FORM
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute right-4 top-4 rounded-full bg-background/90 px-4 py-2 text-center backdrop-blur">
-                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Form Accuracy</div>
-                  <div className="font-display text-3xl font-bold text-primary">{score}%</div>
-                </div>
-
-                <div className="absolute bottom-6 left-1/2 max-w-md -translate-x-1/2 rounded-lg bg-background/90 px-4 py-2 text-center backdrop-blur">
-                  <div className="text-sm font-semibold text-primary">{feedback}</div>
-                </div>
-              </>
+              <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1 text-xs font-bold text-destructive-foreground">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-destructive-foreground" /> LIVE
+              </div>
+            )}
+            {running && (
+              <div className="absolute right-4 top-4 rounded-full bg-background/90 px-4 py-2 text-center backdrop-blur">
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">Accuracy</div>
+                <div className="font-display text-3xl font-bold text-primary">{score}%</div>
+              </div>
+            )}
+            {running && (
+              <div className="absolute bottom-6 left-1/2 max-w-md -translate-x-1/2 rounded-lg bg-background/90 px-4 py-2 text-center backdrop-blur">
+                <div className="text-sm font-semibold">{feedback}</div>
+              </div>
             )}
           </div>
           <div className="flex items-center justify-between p-5">

@@ -11,20 +11,18 @@ export function RoleGuard({
   role: AppRole;
   children: ReactNode;
 }) {
-  const { user, role: userRole, loading, roleLoading } = useAuth();
+  const { user, role: userRole, loading } = useAuth();
   const nav = useNavigate();
 
-  const isLoading = loading || roleLoading;
-
   useEffect(() => {
-    if (isLoading) return;
+    if (loading) return;
     if (!user) nav({ to: "/login" });
     else if (userRole && userRole !== role) {
       nav({ to: `/${userRole}/dashboard` as never });
     }
-  }, [user, userRole, isLoading, role, nav]);
+  }, [user, userRole, loading, role, nav]);
 
-  if (isLoading || !user || userRole !== role) {
+  if (loading || !user || userRole !== role) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />

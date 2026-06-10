@@ -9,7 +9,7 @@ export interface RankedTrainer extends TrainerCardData {
 export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTrainer[]> {
   const { data: trainers, error } = await supabase
     .from("trainer_profiles")
-    .select("user_id, bio, specialties, specialized_goals, experience_years, price_per_session, rating, gym_name, is_approved, is_suspended")
+    .select("user_id, bio, specialties, experience_years, price_per_session, rating, gym_name, is_approved, is_suspended")
     .eq("is_approved", true)
     .eq("is_suspended", false);
   if (error) throw error;
@@ -29,7 +29,6 @@ export async function fetchRankedTrainers(prefs: ClientPrefs): Promise<RankedTra
       const match = scoreTrainer(prefs, {
         user_id: t.user_id,
         specialties: t.specialties,
-        specialized_goals: t.specialized_goals,
         experience_years: t.experience_years,
         price_per_session: Number(t.price_per_session ?? 0),
         rating: Number(t.rating ?? 0),

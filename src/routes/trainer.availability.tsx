@@ -3,25 +3,20 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon, Check, Clock } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { format, startOfWeek, addDays, startOfDay, isSameDay, parseISO, isBefore } from "date-fns";
 
 export const Route = createFileRoute("/trainer/availability")({
   component: () => <RoleGuard role="trainer"><Avail /></RoleGuard>,
 });
 
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7:00 to 21:00
-
 function Avail() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
-  const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  const [date, setDate] = useState("");
+  const [start, setStart] = useState("09:00");
+  const [end, setEnd] = useState("10:00");
 
   const { data: slots, isLoading } = useQuery({
     queryKey: ["my-slots", user?.id],
@@ -29,162 +24,82 @@ function Avail() {
       const { data } = await supabase
         .from("availability_slots")
         .select("*")
-        .eq("trainer_id", user!.id);
+        .eq("trainer_id", user!.id)
+        .order("date").order("start_time");
       return data ?? [];
     },
     enabled: !!user,
   });
 
-  const [toggling, setToggling] = useState<string | null>(null);
-
-  const toggleSlot = async (day: Date, hour: number) => {
-    if (!user) return;
-    
-    const dateStr = format(day, "yyyy-MM-dd");
-    const startTime = `${hour.toString().padStart(2, "0")}:00:00`;
-    const endTime = `${(hour + 1).toString().padStart(2, "0")}:00:00`;
-    
-    const existing = slots?.find(s => s.date === dateStr && s.start_time === startTime);
-    const key = `${dateStr}-${startTime}`;
-    
-    if (existing?.is_booked) {
-      toast.error("Cannot remove a booked slot");
-      return;
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) return;
+    const d = new Date(date);
+    const { error } = await supabase.from("availability_slots").insert({
+      trainer_id: user!.id,
+      date,
+      day_of_week: d.getDay(),
+      start_time: start,
+      end_time: end,
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Slot added");
+      qc.invalidateQueries({ queryKey: ["my-slots"] });
     }
-
-    setToggling(key);
-    
-    if (existing) {
-      const { error } = await supabase.from("availability_slots").delete().eq("id", existing.id);
-      if (error) toast.error(error.message);
-      else {
-        toast.success("Slot removed");
-        qc.invalidateQueries({ queryKey: ["my-slots"] });
-      }
-    } else {
-      const { error } = await supabase.from("availability_slots").insert({
-        trainer_id: user.id,
-        date: dateStr,
-        day_of_week: day.getDay(),
-        start_time: startTime,
-        end_time: endTime,
-      });
-      if (error) toast.error(error.message);
-      else {
-        toast.success("Slot added");
-        qc.invalidateQueries({ queryKey: ["my-slots"] });
-      }
-    }
-    setToggling(null);
   };
 
-  const nextWeek = () => setCurrentDate(addDays(currentDate, 7));
-  const prevWeek = () => setCurrentDate(addDays(currentDate, -7));
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("availability_slots").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Slot removed");
+      qc.invalidateQueries({ queryKey: ["my-slots"] });
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-4xl font-bold tracking-tight">Schedule</h1>
-          <p className="mt-1 text-muted-foreground">Manage your availability for clients.</p>
-        </div>
-        
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1 shadow-sm">
-          <button onClick={prevWeek} className="rounded-lg p-2 transition hover:bg-muted"><ChevronLeft className="h-5 w-5" /></button>
-          <div className="flex items-center gap-2 px-3 font-display font-bold">
-            <CalendarIcon className="h-4 w-4 text-primary" />
-            {format(weekStart, "MMM d")} – {format(weekDays[6], "MMM d, yyyy")}
-          </div>
-          <button onClick={nextWeek} className="rounded-lg p-2 transition hover:bg-muted"><ChevronRight className="h-5 w-5" /></button>
-        </div>
+      <div>
+        <h1 className="font-display text-4xl font-bold">Availability</h1>
+        <p className="mt-2 text-muted-foreground">Open slots are bookable by clients.</p>
       </div>
-
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="sticky left-0 z-10 w-20 border-b border-border bg-card/80 p-4 text-center backdrop-blur-sm">
-                  <Clock className="mx-auto h-4 w-4 text-muted-foreground" />
-                </th>
-                {weekDays.map((day) => (
-                  <th key={day.toString()} className="min-w-[120px] border-b border-border p-4 text-center">
-                    <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{format(day, "EEE")}</div>
-                    <div className={cn(
-                      "mt-1 font-display text-2xl font-bold",
-                      isSameDay(day, new Date()) && "text-primary"
-                    )}>{format(day, "d")}</div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {HOURS.map((hour) => (
-                <tr key={hour} className="group transition-colors hover:bg-muted/10">
-                  <td className="sticky left-0 z-10 border-b border-border bg-card/80 p-3 text-center text-xs font-bold text-muted-foreground backdrop-blur-sm">
-                    {hour}:00
-                  </td>
-                  {weekDays.map((day) => {
-                    const dateStr = format(day, "yyyy-MM-dd");
-                    const startTime = `${hour.toString().padStart(2, "0")}:00:00`;
-                    const slot = slots?.find(s => s.date === dateStr && s.start_time === startTime);
-                    const isPast = isBefore(addDays(startOfDay(day), hour/24), new Date());
-                    const key = `${dateStr}-${startTime}`;
-                    const isLoading = toggling === key;
-
-                    return (
-                      <td key={key} className="border-b border-border p-1">
-                        <button
-                          disabled={isPast || slot?.is_booked}
-                          onClick={() => toggleSlot(day, hour)}
-                          className={cn(
-                            "relative flex h-14 w-full flex-col items-center justify-center rounded-lg border-2 transition-all",
-                            !slot && "border-transparent hover:border-primary/20 hover:bg-primary/5",
-                            slot && !slot.is_booked && "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20",
-                            slot?.is_booked && "cursor-not-allowed border-purple-500/20 bg-purple-500/10 text-purple-500",
-                            isPast && !slot && "cursor-not-allowed opacity-30"
-                          )}
-                        >
-                          {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : slot?.is_booked ? (
-                            <>
-                              <Check className="h-4 w-4" />
-                              <span className="mt-1 text-[10px] font-bold uppercase tracking-tighter">Booked</span>
-                            </>
-                          ) : slot ? (
-                            <>
-                              <div className="h-2 w-2 rounded-full bg-primary" />
-                              <span className="mt-1 text-[10px] font-bold uppercase tracking-tighter">Available</span>
-                            </>
-                          ) : !isPast && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-border transition-colors group-hover:bg-primary/30" />
-                          )}
-                        </button>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <form onSubmit={add} className="grid gap-3 rounded-xl border border-border bg-card p-5 sm:grid-cols-[1fr_1fr_1fr_auto]">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={cls} />
+        <input type="time" value={start} onChange={(e) => setStart(e.target.value)} required className={cls} />
+        <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} required className={cls} />
+        <button className="flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 font-display font-bold text-primary-foreground">
+          <Plus className="h-4 w-4" /> Add
+        </button>
+      </form>
+      {isLoading ? (
+        <div className="flex h-32 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : !slots || slots.length === 0 ? (
+        <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border text-sm text-muted-foreground">No slots yet.</div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {slots.map((s) => (
+            <div key={s.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                  {new Date(s.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                </div>
+                <div className="mt-1 font-display text-lg font-bold">{s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}</div>
+                <div className="mt-1 text-xs">
+                  {s.is_booked ? <span className="text-primary">Booked</span> : <span className="text-muted-foreground">Open</span>}
+                </div>
+              </div>
+              {!s.is_booked && (
+                <button onClick={() => remove(s.id)} className="rounded-md p-2 text-muted-foreground hover:bg-destructive/20 hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
         </div>
-      </div>
-      
-      <div className="flex flex-wrap gap-6 rounded-xl border border-border bg-card p-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full border border-primary/30 bg-primary/10" />
-          <span className="text-muted-foreground font-medium">Available for booking</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full border border-purple-500/30 bg-purple-500/10" />
-          <span className="text-muted-foreground font-medium">Booked by client</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-border" />
-          <span className="text-muted-foreground font-medium">Unavailable</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
+
+const cls = "rounded-md border border-input bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none";

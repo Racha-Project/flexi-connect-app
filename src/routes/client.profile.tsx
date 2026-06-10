@@ -4,9 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { Loader2, Save, MapPin } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { AvatarUpload } from "@/components/auth/AvatarUpload";
 
 export const Route = createFileRoute("/client/profile")({
   component: () => (
@@ -50,7 +49,6 @@ function Profile() {
       .from("profiles")
       .update({
         full_name: (form.full_name as string) || null,
-        avatar_url: (form.avatar_url as string) || null,
         gender: (form.gender as "male" | "female" | "other") || null,
         fitness_goal: (form.fitness_goal as "weight_loss") || null,
         budget_min: form.budget_min ? Number(form.budget_min) : null,
@@ -88,15 +86,6 @@ function Profile() {
         <h1 className="font-display text-4xl font-bold">Profile & preferences</h1>
         <p className="mt-2 text-muted-foreground">Better preferences = better matches.</p>
       </div>
-
-      <div className="flex justify-center rounded-xl border border-border bg-card p-6">
-        <AvatarUpload
-          userId={user!.id}
-          url={(form.avatar_url as string) || null}
-          onUpload={(url) => update("avatar_url", url)}
-        />
-      </div>
-
       <form onSubmit={save} className="space-y-6 rounded-xl border border-border bg-card p-6">
         <Field label="Full name">
           <input value={(form.full_name as string) ?? ""} onChange={(e) => update("full_name", e.target.value)} className={inputCls} />

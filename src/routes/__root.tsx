@@ -19,7 +19,7 @@ function NotFoundComponent() {
         <h1 className="font-display text-8xl font-bold text-gradient-lime">404</h1>
         <h2 className="mt-4 font-display text-xl font-semibold">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          That route doesn't exist in Fitder.
+          That route doesn't exist in LachaFit.
         </p>
         <Link
           to="/"
@@ -59,21 +59,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fitder — Connect with your perfect trainer" },
+      { title: "LachaFit — Smart Personal Trainer Matching" },
       {
         name: "description",
         content:
           "Discover, match, and train with the perfect personal trainer. AI-powered matching, real-time booking, and posture correction.",
       },
-      { property: "og:title", content: "Fitder" },
-      { property: "og:description", content: "Fitder is a modern fitness platform connecting clients with personal trainers." },
+      { property: "og:title", content: "LachaFit" },
+      { property: "og:description", content: "Smart personal trainer matching, booking, and AI posture correction." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Fitder" },
-      { name: "description", content: "Fitder is a modern fitness platform connecting clients with personal trainers." },
-      { name: "twitter:description", content: "Fitder is a modern fitness platform connecting clients with personal trainers." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7bc9795f-f666-430b-9abc-b4bccd75dc88/id-preview-34fccddd--2dea3a55-4451-43d0-8b7c-92710436f65a.lovable.app-1779071374734.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7bc9795f-f666-430b-9abc-b4bccd75dc88/id-preview-34fccddd--2dea3a55-4451-43d0-8b7c-92710436f65a.lovable.app-1779071374734.png" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),

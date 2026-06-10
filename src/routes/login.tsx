@@ -1,64 +1,34 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Login — Fitder" }] }),
+  head: () => ({ meta: [{ title: "Login — LachaFit" }] }),
   component: Login,
 });
 
 function Login() {
   const nav = useNavigate();
-  const { user, role, loading, roleLoading } = useAuth();
+  const { user, role } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // ONLY redirect if we have a user AND a role confirmed from DB
-    if (!loading && !roleLoading && user && role) {
-      console.log("Login: Strict redirect to:", `/${role}/dashboard`);
-      nav({ to: `/${role}/dashboard` as never });
-    }
-  }, [user, role, loading, roleLoading, nav]);
+    if (user && role) nav({ to: `/${role}/dashboard` as never });
+  }, [user, role, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    console.log("Login: Attempting sign in...");
-
-    // Safety timeout to reset button if redirect never happens
-    const safetyTimeout = setTimeout(() => {
-      console.warn("Login: Sign in safety timeout reached");
-      setIsSubmitting(false);
-    }, 10000);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        console.error("Login: Sign in error:", error.message);
-        toast.error(error.message);
-        setIsSubmitting(false);
-        clearTimeout(safetyTimeout);
-      } else {
-        console.log("Login: Auth successful, waiting for DB role fetch...");
-        // Keep safety timeout running for the redirect
-      }
-    } catch (err: any) {
-      console.error("Login: Unexpected error:", err);
-      toast.error(err.message || "An unexpected error occurred");
-      setIsSubmitting(false);
-      clearTimeout(safetyTimeout);
-    }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else toast.success("Welcome back!");
   };
-
-  const isButtonDisabled = isSubmitting || loading;
-  const showSpinner = isSubmitting || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -68,11 +38,11 @@ function Login() {
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
             <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold">Fitder</span>
+          <span className="font-display text-xl font-bold">LachaFit</span>
         </Link>
-        <h1 className="font-display text-3xl font-bold">Welcome to Fitder</h1>
+        <h1 className="font-display text-3xl font-bold">Welcome back</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Log in to manage your training.
+          Sign in to keep training.
         </p>
         <form onSubmit={submit} className="mt-8 space-y-4">
           <div>
@@ -96,11 +66,10 @@ function Login() {
             />
           </div>
           <button
-            type="submit"
-            disabled={isButtonDisabled}
+            disabled={loading}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             Sign in
           </button>
         </form>

@@ -1,74 +1,42 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Sign up — Fitder" }] }),
+  head: () => ({ meta: [{ title: "Sign up — LachaFit" }] }),
   component: Register,
 });
 
 function Register() {
   const nav = useNavigate();
-  const { user, role: userRole, loading: authLoading, roleLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"client" | "trainer">("client");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    // ONLY redirect once the user is created AND the role is confirmed in the DB
-    if (!authLoading && !roleLoading && user && userRole) {
-      console.log("Register: Strict redirect to:", `/${userRole}/dashboard`);
-      nav({ to: `/${userRole}/dashboard` as never });
-    }
-  }, [user, userRole, authLoading, roleLoading, nav]);
+  const [loading, setLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    console.log("Register: Attempting sign up...");
-
-    const safetyTimeout = setTimeout(() => {
-      console.warn("Register: Sign up safety timeout reached");
-      setIsSubmitting(false);
-    }, 15000); // 15s for sign up as it takes longer
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { full_name: fullName, role },
-        },
-      });
-
-      if (error) {
-        console.error("Register: Sign up error:", error.message);
-        toast.error(error.message);
-        setIsSubmitting(false);
-        clearTimeout(safetyTimeout);
-      } else {
-        console.log("Register: Account created, waiting for DB sync...");
-        toast.success("Account created — waiting for database sync…");
-      }
-    } catch (err: any) {
-      console.error("Register: Unexpected error:", err);
-      toast.error(err.message || "Something went wrong");
-      setIsSubmitting(false);
-      clearTimeout(safetyTimeout);
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: fullName, role },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
     }
+    toast.success("Account created — signing you in…");
+    setTimeout(() => nav({ to: `/${role}/dashboard` as never }), 800);
   };
-
-  const isButtonDisabled = isSubmitting || authLoading;
-  const showSpinner = isSubmitting || (user && roleLoading);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -78,11 +46,11 @@ function Register() {
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
             <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold">Fitder</span>
+          <span className="font-display text-xl font-bold">LachaFit</span>
         </Link>
         <h1 className="font-display text-3xl font-bold">Create your account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Join the Fitder community.
+          Join the LachaFit community.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
@@ -135,12 +103,11 @@ function Register() {
             />
           </div>
           <button
-            type="submit"
-            disabled={isButtonDisabled}
+            disabled={loading}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 font-display font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
           >
-            {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
-            Sign up
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Create account
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">

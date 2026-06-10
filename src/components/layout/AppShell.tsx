@@ -16,12 +16,10 @@ import {
   Dumbbell,
   Menu,
   X,
-  Star,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { ChatBot } from "./ChatBot";
 
 type NavItem = { to: string; label: string; icon: typeof Search };
 
@@ -47,7 +45,6 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { to: "/admin/users", label: "Users", icon: Users },
     { to: "/admin/trainers", label: "Trainers", icon: ShieldCheck },
     { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-    { to: "/admin/reviews", label: "Reviews", icon: Star },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   ],
 };
@@ -72,8 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
             <Dumbbell className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight">
-            Fitder
+          <span className="font-display text-lg font-bold tracking-tight">
+            LachaFit
           </span>
         </div>
         <nav className="flex flex-col gap-1 p-3">
@@ -106,10 +103,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <button
             onClick={async () => {
-              console.log("AppShell: Sign out initiated");
               await signOut();
-              console.log("AppShell: Redirecting to login...");
-              window.location.href = "/login";
+              nav({ to: "/login" });
             }}
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
           >
@@ -135,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <div className="hidden font-display text-sm uppercase tracking-widest text-muted-foreground lg:block">
-            {role} · Fitder
+            {role} · LachaFit
           </div>
           <div className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString(undefined, {
@@ -146,7 +141,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-8">{children}</main>
-        <ChatBot />
       </div>
     </div>
   );

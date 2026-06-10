@@ -3,12 +3,9 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, MapPin, DollarSign, Award, Loader2, Calendar, MessageSquare, Send } from "lucide-react";
+import { Star, MapPin, DollarSign, Award, Loader2, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export const Route = createFileRoute("/client/trainer/$id")({
   component: () => (
@@ -24,9 +21,6 @@ function TrainerDetail() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [booking, setBooking] = useState<string | null>(null);
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const { data: trainer, isLoading } = useQuery({
     queryKey: ["trainer-detail", id],
@@ -35,36 +29,6 @@ function TrainerDetail() {
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
       return { tp, prof };
     },
-  });
-
-  const { data: reviews } = useQuery({
-    queryKey: ["trainer-reviews", id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("reviews")
-        .select(`
-          *,
-          client:profiles!client_id(full_name, avatar_url)
-        `)
-        .eq("trainer_id", id)
-        .order("created_at", { ascending: false });
-      return data ?? [];
-    },
-  });
-
-  const { data: canReview } = useQuery({
-    queryKey: ["can-review", id, user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { count } = await supabase
-        .from("bookings")
-        .select("id", { count: "exact", head: true })
-        .eq("client_id", user.id)
-        .eq("trainer_id", id)
-        .eq("booking_status", "completed");
-      return (count ?? 0) > 0;
-    },
-    enabled: !!user,
   });
 
   const { data: slots } = useQuery({
@@ -86,20 +50,11 @@ function TrainerDetail() {
   const book = async (slotId: string) => {
     if (!user || !trainer?.tp) return;
     setBooking(slotId);
-    
-    const price = trainer.tp.price_per_session ?? 0;
-    const commissionRate = 10; // 10% commission
-    const commissionAmount = (price * commissionRate) / 100;
-    const netAmount = price - commissionAmount;
-
     const { error } = await supabase.from("bookings").insert({
       client_id: user.id,
       trainer_id: id,
       slot_id: slotId,
-      total_price: price,
-      commission_rate: commissionRate,
-      commission_amount: commissionAmount,
-      net_amount: netAmount,
+      total_price: trainer.tp.price_per_session ?? 0,
       booking_status: "pending",
     });
     if (error) {
@@ -112,42 +67,6 @@ function TrainerDetail() {
     qc.invalidateQueries({ queryKey: ["slots", id] });
     setBooking(null);
     nav({ to: "/client/bookings" });
-  };
-
-  const submitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !comment.trim()) return;
-
-    setIsSubmittingReview(true);
-    try {
-      const { error } = await supabase.from("reviews").insert({
-        client_id: user.id,
-        trainer_id: id,
-        rating,
-        comment,
-      });
-
-      if (error) throw error;
-
-      // Update trainer rating
-      const { data: allReviews } = await supabase.from("reviews").select("rating").eq("trainer_id", id);
-      if (allReviews) {
-        const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-        await supabase
-          .from("trainer_profiles")
-          .update({ rating: avg, rating_count: allReviews.length })
-          .eq("user_id", id);
-      }
-
-      toast.success("Review submitted!");
-      setComment("");
-      qc.invalidateQueries({ queryKey: ["trainer-reviews", id] });
-      qc.invalidateQueries({ queryKey: ["trainer-detail", id] });
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setIsSubmittingReview(false);
-    }
   };
 
   if (isLoading || !trainer)
@@ -221,91 +140,6 @@ function TrainerDetail() {
                 </div>
               </button>
             ))}
-          </div>
-        )}
-      </section>
-
-      <section className="grid gap-8 lg:grid-cols-2">
-        <div>
-          <h2 className="mb-4 flex items-center gap-2 font-display text-2xl font-bold">
-            <MessageSquare className="h-5 w-5 text-primary" /> Client reviews
-          </h2>
-          {!reviews || reviews.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              No reviews yet.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map((r: any) => (
-                <div key={r.id} className="rounded-xl border border-border bg-card p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
-                      {r.client?.avatar_url ? (
-                        <img src={r.client.avatar_url} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center font-bold text-primary/40">
-                          {r.client?.full_name?.[0]?.toUpperCase() ?? "U"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold">{r.client?.full_name}</div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={cn("h-3 w-3", i < r.rating ? "fill-primary text-primary" : "text-muted")} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm text-muted-foreground italic">"{r.comment}"</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {canReview && (
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h2 className="mb-4 font-display text-xl font-bold">Write a review</h2>
-            <form onSubmit={submitReview} className="space-y-4">
-              <div>
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">Your Rating</label>
-                <div className="mt-2 flex gap-1">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setRating(s)}
-                      className="p-1 transition hover:scale-110"
-                    >
-                      <Star className={cn("h-6 w-6", s <= rating ? "fill-primary text-primary" : "text-muted")} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">Your Comment</label>
-                <Textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Tell others about your experience..."
-                  className="mt-2 min-h-[100px] bg-background"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmittingReview}>
-                {isSubmittingReview ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" /> Submit Review
-                  </>
-                )}
-              </Button>
-            </form>
           </div>
         )}
       </section>
