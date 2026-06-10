@@ -101,12 +101,19 @@ function TrainerDetail() {
     setBooking(slotId);
     
     const isAutoAccept = (trainer.tp as any).auto_accept === true;
+    const totalPrice = trainer.tp.price_per_session ?? 0;
+    const commissionRate = 0.1; // 10%
+    const commissionAmount = totalPrice * commissionRate;
+    const netAmount = totalPrice - commissionAmount;
     
     const { error } = await supabase.from("bookings").insert({
       client_id: user.id,
       trainer_id: id,
       slot_id: slotId,
-      total_price: trainer.tp.price_per_session ?? 0,
+      total_price: totalPrice,
+      commission_rate: commissionRate,
+      commission_amount: commissionAmount,
+      net_amount: netAmount,
       booking_status: isAutoAccept ? "accepted" : "pending",
     });
     if (error) {

@@ -61,7 +61,13 @@ function Dash() {
     accepted: b.filter((x) => x.booking_status === "accepted").length,
     clients: new Set(b.map((x) => x.client_id)).size,
     grossEarnings: completedBookings.reduce((s, x) => s + Number(x.total_price ?? 0), 0),
-    netEarnings: completedBookings.reduce((s, x) => s + Number(x.net_amount ?? x.total_price ?? 0), 0),
+    netEarnings: completedBookings.reduce((s, x) => {
+      const gross = Number(x.total_price ?? 0);
+      const net = x.net_amount !== null && x.net_amount !== undefined 
+        ? Number(x.net_amount) 
+        : gross * 0.9; // Fallback to 90% if net_amount is not set
+      return s + net;
+    }, 0),
     rewardPoints: data?.profile?.reward_points ?? 0,
   };
 

@@ -14,7 +14,7 @@ function A() {
       const [profiles, trainers, bookings, poses, recentBookings] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("trainer_profiles").select("id", { count: "exact", head: true }),
-        supabase.from("bookings").select("id, commission_amount"),
+        supabase.from("bookings").select("id, total_price, commission_amount"),
         supabase.from("pose_sessions").select("id", { count: "exact", head: true }),
         supabase
           .from("bookings")
@@ -23,7 +23,13 @@ function A() {
           .limit(5),
       ]);
       
-      const totalCommission = (bookings.data ?? []).reduce((sum, b) => sum + Number(b.commission_amount ?? 0), 0);
+      const totalCommission = (bookings.data ?? []).reduce((sum, b) => {
+        const gross = Number((b as any).total_price ?? 0);
+        const comm = b.commission_amount !== null && b.commission_amount !== undefined 
+          ? Number(b.commission_amount) 
+          : gross * 0.1;
+        return sum + comm;
+      }, 0);
 
       return {
         users: profiles.count ?? 0,

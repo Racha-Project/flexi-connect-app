@@ -23,16 +23,21 @@ function An() {
         counts[x.booking_status] = (counts[x.booking_status] ?? 0) + 1;
         
         if (x.booking_status === "completed") {
-          totalRevenue += Number(x.total_price ?? 0);
-          totalCommission += Number(x.commission_amount ?? 0);
+          const gross = Number(x.total_price ?? 0);
+          const commission = x.commission_amount !== null && x.commission_amount !== undefined 
+            ? Number(x.commission_amount) 
+            : gross * 0.1;
+
+          totalRevenue += gross;
+          totalCommission += commission;
           
           const date = new Date(x.created_at);
           const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           if (!monthlyRevenue[monthKey]) {
             monthlyRevenue[monthKey] = { month: monthKey, revenue: 0, commission: 0 };
           }
-          monthlyRevenue[monthKey].revenue += Number(x.total_price ?? 0);
-          monthlyRevenue[monthKey].commission += Number(x.commission_amount ?? 0);
+          monthlyRevenue[monthKey].revenue += gross;
+          monthlyRevenue[monthKey].commission += commission;
         }
       });
 

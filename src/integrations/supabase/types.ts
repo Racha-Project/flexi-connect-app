@@ -56,6 +56,9 @@ export type Database = {
           notes: string | null
           slot_id: string
           total_price: number | null
+          commission_rate: number | null
+          commission_amount: number | null
+          net_amount: number | null
           trainer_id: string
           updated_at: string
         }
@@ -67,6 +70,9 @@ export type Database = {
           notes?: string | null
           slot_id: string
           total_price?: number | null
+          commission_rate?: number | null
+          commission_amount?: number | null
+          net_amount?: number | null
           trainer_id: string
           updated_at?: string
         }
@@ -78,6 +84,9 @@ export type Database = {
           notes?: string | null
           slot_id?: string
           total_price?: number | null
+          commission_rate?: number | null
+          commission_amount?: number | null
+          net_amount?: number | null
           trainer_id?: string
           updated_at?: string
         }

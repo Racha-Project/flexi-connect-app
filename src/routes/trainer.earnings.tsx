@@ -25,8 +25,20 @@ function E() {
   });
 
   const totalGross = (data ?? []).reduce((s, b) => s + Number(b.total_price ?? 0), 0);
-  const totalNet = (data ?? []).reduce((s, b) => s + Number(b.net_amount ?? b.total_price ?? 0), 0);
-  const totalCommission = (data ?? []).reduce((s, b) => s + Number(b.commission_amount ?? 0), 0);
+  const totalNet = (data ?? []).reduce((s, b) => {
+    const gross = Number(b.total_price ?? 0);
+    const net = b.net_amount !== null && b.net_amount !== undefined 
+      ? Number(b.net_amount) 
+      : gross * 0.9;
+    return s + net;
+  }, 0);
+  const totalCommission = (data ?? []).reduce((s, b) => {
+    const gross = Number(b.total_price ?? 0);
+    const comm = b.commission_amount !== null && b.commission_amount !== undefined 
+      ? Number(b.commission_amount) 
+      : gross * 0.1;
+    return s + comm;
+  }, 0);
   
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -36,7 +48,13 @@ function E() {
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
   
-  const monthNet = monthData.reduce((s, b) => s + Number(b.net_amount ?? b.total_price ?? 0), 0);
+  const monthNet = monthData.reduce((s, b) => {
+    const gross = Number(b.total_price ?? 0);
+    const net = b.net_amount !== null && b.net_amount !== undefined 
+      ? Number(b.net_amount) 
+      : gross * 0.9;
+    return s + net;
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -80,14 +98,24 @@ function E() {
                   <td colSpan={4} className="py-8 text-center text-muted-foreground">No completed bookings yet.</td>
                 </tr>
               ) : (
-                (data ?? []).map((b, i) => (
-                  <tr key={i}>
-                    <td className="py-3">{new Date(b.created_at).toLocaleDateString()}</td>
-                    <td className="py-3 text-right">${Number(b.total_price).toFixed(2)}</td>
-                    <td className="py-3 text-right text-destructive">-${Number(b.commission_amount ?? 0).toFixed(2)}</td>
-                    <td className="py-3 text-right font-semibold text-primary">${Number(b.net_amount ?? b.total_price).toFixed(2)}</td>
-                  </tr>
-                ))
+                (data ?? []).map((b, i) => {
+                  const gross = Number(b.total_price ?? 0);
+                  const commission = b.commission_amount !== null && b.commission_amount !== undefined 
+                    ? Number(b.commission_amount) 
+                    : gross * 0.1;
+                  const net = b.net_amount !== null && b.net_amount !== undefined 
+                    ? Number(b.net_amount) 
+                    : gross * 0.9;
+                  
+                  return (
+                    <tr key={i}>
+                      <td className="py-3">{new Date(b.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 text-right">${gross.toFixed(2)}</td>
+                      <td className="py-3 text-right text-destructive">-${commission.toFixed(2)}</td>
+                      <td className="py-3 text-right font-semibold text-primary">${net.toFixed(2)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
