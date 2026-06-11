@@ -6,6 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/client/bookings")({
   component: () => (
@@ -26,6 +38,7 @@ const statusStyles: Record<string, string> = {
 function Bookings() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ["my-bookings", user?.id],
@@ -84,12 +97,27 @@ function Bookings() {
                 </div>
               </div>
               {(b.booking_status === "pending" || b.booking_status === "accepted") && (
-                <button
-                  onClick={() => cancel(b.id, b.slot_id)}
-                  className="rounded-md border border-border px-4 py-2 text-sm hover:border-destructive hover:text-destructive"
-                >
-                  Cancel
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                    className="rounded-md border border-border px-4 py-2 text-sm hover:border-destructive hover:text-destructive"
+                  >
+                    Cancel
+                  </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirm Cancellation</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to cancel your booking with {b.trainer_name} on {new Date(b.slot.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} at {b.slot.start_time.slice(0, 5)}?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => cancel(b.id, b.slot_id)}>Confirm Cancellation</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </div>
           ))}

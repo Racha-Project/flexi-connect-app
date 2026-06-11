@@ -9,6 +9,17 @@ import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/client/trainer/$id")({
   component: () => (
@@ -24,6 +35,7 @@ function TrainerDetail() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [booking, setBooking] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -224,22 +236,36 @@ function TrainerDetail() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {slots.map((s) => (
-              <button
-                key={s.id}
-                disabled={booking === s.id}
-                onClick={() => book(s.id)}
-                className="group rounded-xl border border-border bg-card p-4 text-left transition hover:border-primary disabled:opacity-50"
-              >
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {new Date(s.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-                </div>
-                <div className="mt-1 font-display text-xl font-bold">
-                  {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
-                </div>
-                <div className="mt-2 text-xs text-primary opacity-0 transition group-hover:opacity-100">
-                  {booking === s.id ? "Booking…" : "Book this slot →"}
-                </div>
-              </button>
+              <AlertDialog key={s.id}>
+                <AlertDialogTrigger asChild>
+                  <button
+                    disabled={booking === s.id}
+                    className="group rounded-xl border border-border bg-card p-4 text-left transition hover:border-primary disabled:opacity-50"
+                  >
+                    <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                      {new Date(s.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                    </div>
+                    <div className="mt-1 font-display text-xl font-bold">
+                      {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
+                    </div>
+                    <div className="mt-2 text-xs text-primary opacity-0 transition group-hover:opacity-100">
+                      {booking === s.id ? "Booking…" : "Book this slot →"}
+                    </div>
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to book this slot with {prof?.full_name} on {new Date(s.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} at {s.start_time.slice(0, 5)}?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => book(s.id)}>Confirm</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             ))}
           </div>
         )}
